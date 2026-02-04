@@ -641,9 +641,9 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     
     <script>
-        // VoAI API Configuration
-        const VOAI_API_KEY = 'iq-25o+cxUIWDWQnIcalaDfHZBhHKuxp2mj8zHAAqVSUsk=';
-        const VOAI_API_URL = 'https://connect.voai.ai/TTS/Speech';
+        // Backend API URL - 部署後請更新這個網址
+        const BACKEND_API_URL = 'https://your-project-name.vercel.app/api/tts';
+        // 部署完成後，將上面的網址改成 Vercel 給您的網址
         
         // Points data from CSV
         const points = [
@@ -1069,17 +1069,15 @@
                     button.disabled = true;
                     text.textContent = '載入中...';
                     
-                    // Call VoAI API
-                    const response = await fetch(VOAI_API_URL, {
+                    // Call Backend API
+                    const response = await fetch(BACKEND_API_URL, {
                         method: 'POST',
                         headers: {
-                            'x-output-format': 'mp3',
-                            'x-api-key': VOAI_API_KEY,
                             'Content-Type': 'application/json'
                         },
                         body: JSON.stringify({
-                            version: 'Sota',
                             text: currentPoint.description,
+                            version: 'Sota',
                             speaker: '文彬',
                             style: '預設',
                             speed: 1,
@@ -1127,7 +1125,13 @@
                     console.error('VoAI API Error:', error);
                     button.disabled = false;
                     text.textContent = '朗讀介紹';
-                    alert('語音生成失敗，請檢查 API Key 或網路連線');
+                    
+                    // 更友善的錯誤訊息
+                    if (error.message.includes('CORS') || error.message.includes('Failed to fetch')) {
+                        alert('語音功能目前無法使用\n\n原因：瀏覽器安全限制阻止了 API 呼叫\n\n解決方案：\n1. 使用本地端開啟網頁測試\n2. 或部署後端代理伺服器');
+                    } else {
+                        alert('語音生成失敗：' + error.message);
+                    }
                 }
             }
         }
