@@ -77,6 +77,11 @@
             animation: slideDown 0.6s cubic-bezier(0.16, 1, 0.3, 1);
         }
         
+        /* Hide header when detail view is active */
+        body.detail-active header {
+            display: none;
+        }
+        
         @keyframes slideDown {
             from {
                 transform: translateY(-100%);
@@ -261,30 +266,35 @@
         .back-button {
             position: fixed;
             top: 1.5rem;
-            right: 1.5rem;
+            left: 1.5rem;
             z-index: 101;
-            width: 48px;
-            height: 48px;
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border-primary);
-            border-radius: 50%;
             display: flex;
             align-items: center;
-            justify-content: center;
+            gap: 0.5rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-primary);
+            border-radius: 8px;
+            padding: 0.7rem 1.2rem;
             cursor: pointer;
             transition: all 0.3s ease;
             box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            font-family: 'Noto Serif TC', serif;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text-primary);
         }
         
         .back-button:hover {
             background: var(--primary-60);
             border-color: var(--primary-60);
-            transform: scale(1.05);
+            color: var(--bg-primary);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(201,169,97,0.4);
         }
         
         .back-button svg {
-            width: 24px;
-            height: 24px;
+            width: 18px;
+            height: 18px;
             stroke: var(--text-primary);
             transition: stroke 0.3s ease;
         }
@@ -302,7 +312,7 @@
         .detail-content {
             max-width: 900px;
             margin: 0 auto;
-            padding: 4.5rem 1.5rem 2rem;
+            padding: 5rem 1.5rem 2rem;
         }
         
         .detail-number {
@@ -508,8 +518,15 @@
                 font-size: 0.8rem;
             }
             
+            .back-button {
+                top: 1rem;
+                left: 1rem;
+                padding: 0.6rem 1rem;
+                font-size: 0.85rem;
+            }
+            
             .detail-content {
-                padding: 5rem 1.2rem 2rem;
+                padding: 4rem 1.2rem 2rem;
             }
             
             .detail-title {
@@ -580,9 +597,9 @@
     <div id="detail-view">
         <div class="back-button" onclick="closeDetail()">
             <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
+                <polyline points="15 18 9 12 15 6"></polyline>
             </svg>
+            <span>返回地圖</span>
         </div>
         
         <div class="detail-scroll-area">
@@ -933,6 +950,9 @@
                 toggleAudio();
             }
             
+            // Add class to body to hide header
+            document.body.classList.add('detail-active');
+            
             // Update content
             document.getElementById('detail-number').textContent = `NO. ${String(currentPoint.no).padStart(2, '0')}`;
             document.getElementById('detail-title').textContent = currentPoint.title;
@@ -973,6 +993,9 @@
             
             // Stop gallery auto-play
             stopGalleryAutoPlay();
+            
+            // Remove class from body to show header
+            document.body.classList.remove('detail-active');
             
             document.getElementById('detail-view').classList.remove('active');
             document.body.style.overflow = 'auto';
