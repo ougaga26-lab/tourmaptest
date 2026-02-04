@@ -1,102 +1,668 @@
-async function toggleAudio() {
-  if (!currentPoint) {
-    alert('請先選擇一個景點');
-    return;
-  }
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>萬華艋舺 · 歷史街區導覽</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            /* Primary Colors - Based on Design System */
+            --primary-60: #c9a961;
+            --primary-50: #d4b574;
+            --primary-40: #ddc188;
+            
+            /* Secondary Colors */
+            --secondary-60: #8a8377;
+            --secondary-50: #9d9689;
+            --secondary-40: #b0a99c;
+            
+            /* Tertiary Colors */
+            --tertiary-60: #b89076;
+            --tertiary-50: #c9a184;
+            --tertiary-40: #dab292;
+            
+            /* Neutral Colors */
+            --neutral-90: #1f1f1f;
+            --neutral-80: #333333;
+            --neutral-70: #4d4d4d;
+            --neutral-60: #666666;
+            --neutral-50: #808080;
+            --neutral-40: #999999;
+            --neutral-30: #b3b3b3;
+            --neutral-20: #cccccc;
+            --neutral-10: #e6e6e6;
+            --neutral-5: #f2f2f2;
+            --neutral-0: #ffffff;
+            
+            /* Typography */
+            --font-family: 'Noto Serif TC', serif;
+            --font-size-title: 24px;
+            --font-size-subtitle: 18px;
+            --font-size-body: 14px;
+            --font-size-caption: 12px;
+            
+            /* Spacing */
+            --space-xs: 4px;
+            --space-sm: 8px;
+            --space-md: 16px;
+            --space-lg: 24px;
+            --space-xl: 32px;
+            
+            /* Border Radius */
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            
+            /* Shadows */
+            --shadow-sm: 0 2px 8px rgba(0,0,0,0.08);
+            --shadow-md: 0 4px 16px rgba(0,0,0,0.12);
+            --shadow-lg: 0 8px 32px rgba(0,0,0,0.16);
+        }
 
-  const button = document.getElementById('audio-button');
-  const text = document.getElementById('audio-text');
-  const audioEl = document.getElementById('ttsAudio');
-  const audioHint = document.getElementById('audioHint');
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-  // 停止
-  if (isPlaying) {
-    audioEl.pause();
-    audioEl.currentTime = 0;
+        body {
+            font-family: var(--font-family);
+            background: var(--neutral-0);
+            color: var(--neutral-90);
+            overflow-x: hidden;
+            height: 100vh;
+        }
 
-    if (currentAudioUrl) { URL.revokeObjectURL(currentAudioUrl); currentAudioUrl = null; }
-    audioEl.src = '';
-    audioEl.style.display = 'none';
-    audioHint.style.display = 'none';
+        /* Map Container */
+        #map {
+            width: 100%;
+            height: 100vh;
+            position: relative;
+            z-index: 1;
+        }
 
-    isPlaying = false;
-    button.classList.remove('playing');
-    text.textContent = '朗讀介紹';
-    return;
-  }
+        /* Custom Marker */
+        .custom-marker {
+            background: var(--primary-60);
+            border: 3px solid var(--neutral-0);
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            box-shadow: var(--shadow-sm);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
 
-  // 生成 + 播放
-  try {
-    button.disabled = true;
-    text.textContent = '生成中...';
+        .custom-marker:hover {
+            transform: scale(1.2);
+            background: var(--primary-50);
+        }
 
-    // 叫後端生成音檔
-    const response = await fetch('/api/tts', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        text: currentPoint.description,
-        version: 'Sota',
-        speaker: '文彬',
-        style: '預設',
-        speed: 1,
-        pitch_shift: 0,
-        style_weight: 0,
-        breath_pause: 0.3
-      })
-    });
+        /* Detail Panel */
+        .detail-panel {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--neutral-0);
+            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+            box-shadow: var(--shadow-lg);
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
 
-    if (!response.ok) throw new Error(`API request failed: ${response.status}`);
+        .detail-panel.active {
+            transform: translateY(0);
+        }
 
-    const audioBlob = await response.blob();
-    const audioUrl = URL.createObjectURL(audioBlob);
+        .detail-header {
+            padding: var(--space-md);
+            border-bottom: 1px solid var(--neutral-10);
+            position: sticky;
+            top: 0;
+            background: var(--neutral-0);
+            z-index: 10;
+        }
 
-    // 塞到 audio 元素
-    if (currentAudioUrl) URL.revokeObjectURL(currentAudioUrl);
-    currentAudioUrl = audioUrl;
+        .detail-handle {
+            width: 40px;
+            height: 4px;
+            background: var(--neutral-20);
+            border-radius: 2px;
+            margin: 0 auto var(--space-sm);
+        }
 
-    audioEl.src = audioUrl;
-    audioEl.style.display = 'block';
+        .detail-title {
+            font-size: var(--font-size-subtitle);
+            font-weight: 700;
+            color: var(--neutral-90);
+            text-align: center;
+            margin-bottom: var(--space-xs);
+        }
 
-    // LINE 內建瀏覽器：不要用 JS 強制 play，改用提示 + 讓使用者按 controls 播放
-    if (isLineInAppBrowser()) {
-      audioHint.style.display = 'block';
-      button.disabled = false;
-      text.textContent = '請按下方播放鍵';
-      // 不設定 isPlaying，因為是否在播由使用者控制列決定
-      return;
-    }
+        .detail-location {
+            font-size: var(--font-size-caption);
+            color: var(--neutral-60);
+            text-align: center;
+        }
 
-    // 非 LINE：正常嘗試播放
-    await audioEl.play();
+        .detail-content {
+            padding: var(--space-md);
+        }
 
-    isPlaying = true;
-    button.classList.add('playing');
-    button.disabled = false;
-    text.textContent = '停止播放';
+        .detail-gallery {
+            width: 100%;
+            height: 200px;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            margin-bottom: var(--space-md);
+            position: relative;
+        }
 
-    audioEl.onended = () => {
-      isPlaying = false;
-      button.classList.remove('playing');
-      text.textContent = '朗讀介紹';
-      if (currentAudioUrl) { URL.revokeObjectURL(currentAudioUrl); currentAudioUrl = null; }
-      audioEl.style.display = 'none';
-      audioHint.style.display = 'none';
-    };
+        .gallery-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
 
-  } catch (error) {
-    console.error(error);
-    button.disabled = false;
-    text.textContent = '朗讀介紹';
+        .gallery-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0,0,0,0.5);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s ease;
+        }
 
-    // 如果是 play 被擋，給更精準提示
-    const msg = String(error?.message || error);
-    if (msg.includes('not allowed') || msg.includes('NotAllowedError')) {
-      audioEl.style.display = 'block';
-      audioHint.style.display = 'block';
-      alert('此瀏覽器限制自動播放。請改用下方音訊播放器按 ▶︎ 播放，或右上角用 Safari 開啟。');
-    } else {
-      alert('語音生成失敗：' + msg);
-    }
-  }
-}
+        .gallery-nav:hover {
+            background: rgba(0,0,0,0.7);
+        }
+
+        .gallery-nav.prev {
+            left: 10px;
+        }
+
+        .gallery-nav.next {
+            right: 10px;
+        }
+
+        .gallery-indicators {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 8px;
+        }
+
+        .indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.5);
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .indicator.active {
+            background: rgba(255,255,255,1);
+        }
+
+        .detail-description {
+            font-size: var(--font-size-body);
+            line-height: 1.6;
+            color: var(--neutral-70);
+            margin-bottom: var(--space-lg);
+        }
+
+        /* Audio Button */
+        .audio-button-container {
+            position: fixed;
+            bottom: var(--space-md);
+            right: var(--space-md);
+            z-index: 999;
+        }
+
+        .audio-button {
+            background: var(--primary-60);
+            color: var(--neutral-0);
+            border: none;
+            border-radius: 50px;
+            padding: var(--space-md) var(--space-lg);
+            font-family: var(--font-family);
+            font-size: var(--font-size-body);
+            font-weight: 500;
+            cursor: pointer;
+            box-shadow: var(--shadow-md);
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            transition: all 0.3s ease;
+        }
+
+        .audio-button:hover {
+            background: var(--primary-50);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .audio-button:disabled {
+            background: var(--neutral-30);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .audio-button.playing {
+            background: var(--tertiary-60);
+        }
+
+        .audio-icon {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+        }
+
+        /* Close Button */
+        .close-button {
+            position: absolute;
+            top: var(--space-md);
+            right: var(--space-md);
+            background: var(--neutral-5);
+            border: none;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s ease;
+        }
+
+        .close-button:hover {
+            background: var(--neutral-10);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .detail-panel {
+                max-height: 85vh;
+            }
+            
+            .detail-gallery {
+                height: 180px;
+            }
+            
+            .audio-button {
+                padding: var(--space-sm) var(--space-md);
+                font-size: var(--font-size-caption);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    
+    <!-- Detail Panel -->
+    <div class="detail-panel" id="detail-panel">
+        <div class="detail-header">
+            <div class="detail-handle"></div>
+            <button class="close-button" onclick="closeDetailPanel()">
+                ✕
+            </button>
+            <div class="detail-title" id="detail-title"></div>
+            <div class="detail-location" id="detail-location"></div>
+        </div>
+        <div class="detail-content">
+            <div class="detail-gallery" id="detail-gallery">
+                <img class="gallery-image" id="gallery-image" src="" alt="">
+                <button class="gallery-nav prev" onclick="prevImage()">‹</button>
+                <button class="gallery-nav next" onclick="nextImage()">›</button>
+                <div class="gallery-indicators" id="gallery-indicators"></div>
+            </div>
+            <div class="detail-description" id="detail-description"></div>
+        </div>
+    </div>
+    
+    <div class="audio-button-container">
+        <button class="audio-button" id="audio-button" onclick="toggleAudio()">
+            <svg class="audio-icon" viewBox="0 0 24 24">
+                <path d="M11 5L6 9H2v6h4l5 4V5z"/>
+                <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
+            </svg>
+            <span id="audio-text">朗讀介紹</span>
+        </button>
+
+        <!-- ✅ 用固定的 audio 元素播放（手機更穩），並支援 iOS inline -->
+        <audio id="ttsAudio" playsinline></audio>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <script>
+        // Map Data
+        const points = [
+            {
+                id: 1,
+                name: "龍山寺",
+                location: "台北市萬華區廣州街211號",
+                lat: 25.0367,
+                lng: 121.4998,
+                images: [
+                    "https://images.unsplash.com/photo-1548013146-72479768bada?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+                    "https://images.unsplash.com/photo-1551854838-212c12ab98f4?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                ],
+                description: "艋舺龍山寺建於清乾隆三年（1738年），是台北最古老的寺廟之一。寺內供奉觀世音菩薩，香火鼎盛，建築融合了閩南式與廣東式的特色，是艋舺地區的重要信仰中心。"
+            },
+            {
+                id: 2,
+                name: "剝皮寮歷史街區",
+                location: "台北市萬華區康定路173巷",
+                lat: 25.0378,
+                lng: 121.5009,
+                images: [
+                    "https://images.unsplash.com/photo-1585468274952-66591eb14165?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+                    "https://images.unsplash.com/photo-1585468274952-66591eb14165?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                ],
+                description: "剝皮寮歷史街區保留了清代至日治時期的街屋建築，是台北市少數完整保存的歷史街區。紅磚拱廊、木造結構，見證了艋舺商業繁華的歷史。現為文化展示空間，常舉辦展覽與活動。"
+            },
+            {
+                id: 3,
+                name: "華西街觀光夜市",
+                location: "台北市萬華區華西街",
+                lat: 25.0372,
+                lng: 121.5004,
+                images: [
+                    "https://images.unsplash.com/photo-1542773998-9325f3f7859f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+                    "https://images.unsplash.com/photo-1542773998-9325f3f7859f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                ],
+                description: "華西街觀光夜市又稱「蛇街」，創立於1950年代，是台北歷史悠久的夜市之一。夜市內有各式小吃攤販，從傳統台灣小吃到異國料理應有盡有，是體驗台北夜生活的好去處。"
+            }
+        ];
+
+        // Global Variables
+        let map;
+        let currentPoint = null;
+        let currentImageIndex = 0;
+        let currentAudio = null;
+        let currentAudioUrl = null;
+        let audioUnlocked = false;
+        let isPlaying = false;
+        let galleryInterval = null;
+
+        // Initialize Map
+        function initMap() {
+            map = L.map('map').setView([25.0375, 121.5004], 16);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+
+            // Add markers
+            points.forEach(point => {
+                const marker = L.marker([point.lat, point.lng], {
+                    icon: L.divIcon({
+                        className: 'custom-marker',
+                        iconSize: [20, 20]
+                    })
+                }).addTo(map);
+
+                marker.on('click', () => showDetail(point));
+            });
+        }
+
+        // Show Detail Panel
+        function showDetail(point) {
+            currentPoint = point;
+            currentImageIndex = 0;
+
+            document.getElementById('detail-title').textContent = point.name;
+            document.getElementById('detail-location').textContent = point.location;
+            document.getElementById('detail-description').textContent = point.description;
+
+            updateGallery();
+            startGalleryAutoPlay();
+
+            document.getElementById('detail-panel').classList.add('active');
+        }
+
+        // Close Detail Panel
+        function closeDetailPanel() {
+            document.getElementById('detail-panel').classList.remove('active');
+            stopGalleryAutoPlay();
+
+            // Stop audio if playing
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+                currentAudio.src = '';
+            }
+            if (currentAudioUrl) { URL.revokeObjectURL(currentAudioUrl); currentAudioUrl = null; }
+
+            isPlaying = false;
+            const button = document.getElementById('audio-button');
+            const text = document.getElementById('audio-text');
+            button.classList.remove('playing');
+            text.textContent = '朗讀介紹';
+        }
+
+        // Gallery Functions
+        function updateGallery() {
+            if (!currentPoint) return;
+
+            const image = document.getElementById('gallery-image');
+            image.src = currentPoint.images[currentImageIndex];
+
+            // Update indicators
+            const indicators = document.getElementById('gallery-indicators');
+            indicators.innerHTML = '';
+            
+            currentPoint.images.forEach((_, index) => {
+                const indicator = document.createElement('div');
+                indicator.className = `indicator ${index === currentImageIndex ? 'active' : ''}`;
+                indicator.onclick = () => {
+                    currentImageIndex = index;
+                    updateGallery();
+                    resetGalleryAutoPlay();
+                };
+                indicators.appendChild(indicator);
+            });
+        }
+
+        function prevImage() {
+            if (!currentPoint) return;
+            currentImageIndex = (currentImageIndex - 1 + currentPoint.images.length) % currentPoint.images.length;
+            updateGallery();
+            resetGalleryAutoPlay();
+        }
+
+        function nextImage() {
+            if (!currentPoint) return;
+            currentImageIndex = (currentImageIndex + 1) % currentPoint.images.length;
+            updateGallery();
+            resetGalleryAutoPlay();
+        }
+
+        function startGalleryAutoPlay() {
+            stopGalleryAutoPlay();
+            galleryInterval = setInterval(() => {
+                nextImage();
+            }, 4000);
+        }
+
+        function stopGalleryAutoPlay() {
+            if (galleryInterval) {
+                clearInterval(galleryInterval);
+                galleryInterval = null;
+            }
+        }
+
+        function resetGalleryAutoPlay() {
+            startGalleryAutoPlay();
+        }
+
+        // ✅ 解鎖手機（尤其 iOS）音訊播放權限
+        async function unlockAudioOnce() {
+            if (audioUnlocked) return;
+            const audioEl = document.getElementById('ttsAudio');
+            if (!audioEl) return;
+
+            // A very short silent WAV to "unlock" audio playback on mobile browsers (especially iOS).
+            const silentWav = "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=";
+
+            audioEl.src = silentWav;
+            audioEl.muted = true;
+
+            try {
+                await audioEl.play();
+                audioEl.pause();
+                audioEl.currentTime = 0;
+                audioEl.muted = false;
+                audioUnlocked = true;
+            } catch (e) {
+                console.warn('Audio unlock failed:', e);
+            }
+        }
+
+        // Audio Toggle Function
+        async function toggleAudio() {
+            if (!currentPoint) {
+                alert('請先選擇一個景點');
+                return;
+            }
+
+            const button = document.getElementById('audio-button');
+            const text = document.getElementById('audio-text');
+
+            if (isPlaying) {
+                // Stop audio
+                if (currentAudio) {
+                    currentAudio.pause();
+                    currentAudio.currentTime = 0;
+                    currentAudio.src = '';
+                }
+                if (currentAudioUrl) { URL.revokeObjectURL(currentAudioUrl); currentAudioUrl = null; }
+
+                isPlaying = false;
+                button.classList.remove('playing');
+                text.textContent = '朗讀介紹';
+            } else {
+                // Generate and play audio
+                try {
+                    // Show loading state
+                    button.disabled = true;
+                    text.textContent = '生成中...';
+
+                    // ✅ Unlock audio playback on mobile (iOS/Android)
+                    await unlockAudioOnce();
+
+                    // Call backend API (Vercel function)
+                    const response = await fetch('/api/tts', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            text: currentPoint.description,
+                            version: 'Sota',
+                            speaker: '文彬',
+                            style: '預設',
+                            speed: 1,
+                            pitch_shift: 0,
+                            style_weight: 0,
+                            breath_pause: 0.3
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('API request failed');
+                    }
+
+                    // Get audio blob
+                    const audioBlob = await response.blob();
+                    const audioUrl = URL.createObjectURL(audioBlob);
+
+                    // Use a single <audio> element for better mobile compatibility
+                    currentAudio = document.getElementById('ttsAudio');
+                    currentAudio.src = audioUrl;
+                    currentAudioUrl = audioUrl;
+
+                    currentAudio.onended = () => {
+                        isPlaying = false;
+                        button.classList.remove('playing');
+                        button.disabled = false;
+                        text.textContent = '朗讀介紹';
+                        if (currentAudioUrl) { URL.revokeObjectURL(currentAudioUrl); currentAudioUrl = null; }
+                    };
+
+                    currentAudio.onerror = () => {
+                        isPlaying = false;
+                        button.classList.remove('playing');
+                        button.disabled = false;
+                        text.textContent = '朗讀介紹';
+                        alert('播放失敗，請稍後再試');
+                        if (currentAudioUrl) { URL.revokeObjectURL(currentAudioUrl); currentAudioUrl = null; }
+                    };
+
+                    await currentAudio.play();
+                    isPlaying = true;
+                    button.classList.add('playing');
+                    button.disabled = false;
+                    text.textContent = '停止播放';
+
+                } catch (error) {
+                    console.error('VoAI API Error:', error);
+                    button.disabled = false;
+                    text.textContent = '朗讀介紹';
+
+                    // 更友善的錯誤訊息
+                    if (String(error?.message || '').includes('CORS') || String(error?.message || '').includes('Failed to fetch')) {
+                        alert('語音功能目前無法使用\n\n原因：瀏覽器安全限制阻止了 API 呼叫\n\n解決方案：\n1. 使用本地端開啟網頁測試\n2. 或部署後端代理伺服器');
+                    } else {
+                        alert('語音生成/播放失敗：' + (error?.message || error));
+                    }
+                }
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            initMap();
+            currentAudio = document.getElementById('ttsAudio');
+        });
+
+        // Stop audio when leaving page
+        window.addEventListener('beforeunload', () => {
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+                currentAudio.src = '';
+            }
+            if (currentAudioUrl) { URL.revokeObjectURL(currentAudioUrl); currentAudioUrl = null; }
+            stopGalleryAutoPlay();
+        });
+    </script>
+</body>
+</html>
