@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>萬華艋舺 · 歷史街區導覽</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:wght@400;600;700&family=Noto+Serif+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --color-bg: #0a0a0a;
+            --color-surface: #1a1816;
+            --color-surface-elevated: #262320;
+            --color-primary: #d4af37;
+            --color-primary-light: #f0d98e;
+            --color-primary-dark: #b8941f;
+            --color-text: #e8e6e3;
+            --color-text-secondary: #a8a5a0;
+            --color-text-muted: #6b6860;
+            --color-border: #332f2a;
+            --color-accent: #c9a961;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Noto Serif TC', serif;
+            background: var(--color-bg);
+            color: var(--color-text);
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+        
+        /* Header */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: linear-gradient(180deg, rgba(10,10,10,0.98) 0%, rgba(10,10,10,0.9) 100%);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--color-border);
+            padding: 1.2rem 1.5rem;
+            animation: slideDown 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        
+        @keyframes slideDown {
+            from {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        h1 {
+            font-family: 'Noto Serif TC', serif;
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: var(--color-primary);
+            letter-spacing: 0.05em;
+        }
+        
+        .subtitle {
+            font-size: 0.85rem;
+            color: var(--color-text-secondary);
+            font-weight: 400;
+            margin-top: 0.2rem;
+            letter-spacing: 0.15em;
+        }
+        
+        /* Map View */
+        #map-view {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            z-index: 1;
+        }
+        
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+        
+        /* Custom Leaflet Marker */
+        .custom-marker {
+            background: var(--color-primary);
+            width: 32px;
+            height: 32px;
+            border-radius: 50% 50% 50% 0;
+            transform: rotate(-45deg);
+            border: 3px solid rgba(10,10,10,0.9);
+            box-shadow: 0 4px 12px rgba(212,175,55,0.4);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .custom-marker:hover {
+            transform: rotate(-45deg) scale(1.15);
+            box-shadow: 0 6px 20px rgba(212,175,55,0.6);
+        }
+        
+        .custom-marker::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(45deg);
+            width: 8px;
+            height: 8px;
+            background: var(--color-bg);
+            border-radius: 50%;
+        }
+        
+        /* Detail View */
+        #detail-view {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: var(--color-bg);
+            z-index: 100;
+            display: none;
+            overflow-y: auto;
+            animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        
+        #detail-view.active {
+            display: block;
+        }
+        
+        @keyframes slideUp {
+            from {
+                transform: translateY(100%);
+            }
+            to {
+                transform: translateY(0);
+            }
+        }
+        
+        .back-button {
+            position: fixed;
+            top: 1.5rem;
+            right: 1.5rem;
+            z-index: 101;
+            width: 48px;
+            height: 48px;
+            background: var(--color-surface-elevated);
+            border: 1px solid var(--color-border);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        
+        .back-button:hover {
+            background: var(--color-primary);
+            border-color: var(--color-primary);
+            transform: scale(1.05);
+        }
+        
+        .back-button svg {
+            width: 24px;
+            height: 24px;
+            stroke: var(--color-text);
+            transition: stroke 0.3s ease;
+        }
+        
+        .back-button:hover svg {
+            stroke: var(--color-bg);
+        }
+        
+        .detail-content {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 6rem 1.5rem 4rem;
+        }
+        
+        .detail-number {
+            display: inline-block;
+            font-family: 'Crimson Text', serif;
+            font-size: 0.9rem;
+            color: var(--color-primary);
+            border: 1px solid var(--color-primary);
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            margin-bottom: 1.5rem;
+            letter-spacing: 0.1em;
+            animation: fadeIn 0.6s ease 0.2s both;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .detail-title {
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: var(--color-primary-light);
+            margin-bottom: 2rem;
+            line-height: 1.3;
+            animation: fadeIn 0.6s ease 0.3s both;
+        }
+        
+        /* Image Gallery */
+        .image-gallery {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            margin-bottom: 3rem;
+            overflow: hidden;
+            border-radius: 8px;
+            border: 1px solid var(--color-border);
+            animation: fadeIn 0.6s ease 0.4s both;
+        }
+        
+        .gallery-track {
+            display: flex;
+            height: 100%;
+            transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        
+        .gallery-slide {
+            min-width: 100%;
+            height: 100%;
+            position: relative;
+            background: var(--color-surface);
+        }
+        
+        .gallery-slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        
+        .gallery-controls {
+            position: absolute;
+            bottom: 1.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 0.5rem;
+            z-index: 10;
+        }
+        
+        .gallery-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: rgba(232,230,227,0.3);
+            border: 1px solid rgba(232,230,227,0.5);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .gallery-dot.active {
+            background: var(--color-primary);
+            border-color: var(--color-primary);
+            transform: scale(1.3);
+        }
+        
+        .gallery-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 40px;
+            height: 40px;
+            background: rgba(10,10,10,0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(232,230,227,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+        
+        .gallery-nav:hover {
+            background: var(--color-primary);
+            border-color: var(--color-primary);
+        }
+        
+        .gallery-nav.prev {
+            left: 1rem;
+        }
+        
+        .gallery-nav.next {
+            right: 1rem;
+        }
+        
+        .gallery-nav svg {
+            width: 20px;
+            height: 20px;
+            stroke: var(--color-text);
+        }
+        
+        .gallery-nav:hover svg {
+            stroke: var(--color-bg);
+        }
+        
+        /* Description */
+        .detail-description {
+            font-size: 1.1rem;
+            line-height: 2;
+            color: var(--color-text);
+            margin-bottom: 3rem;
+            white-space: pre-line;
+            animation: fadeIn 0.6s ease 0.5s both;
+        }
+        
+        /* Audio Button */
+        .audio-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.8rem;
+            background: linear-gradient(135deg, var(--color-primary-dark) 0%, var(--color-primary) 100%);
+            color: var(--color-bg);
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            font-family: 'Noto Serif TC', serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 16px rgba(212,175,55,0.3);
+            animation: fadeIn 0.6s ease 0.6s both;
+        }
+        
+        .audio-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(212,175,55,0.5);
+        }
+        
+        .audio-button:active {
+            transform: translateY(0);
+        }
+        
+        .audio-button.playing {
+            background: linear-gradient(135deg, #8b7a3e 0%, #6b5d2f 100%);
+        }
+        
+        .audio-icon {
+            width: 24px;
+            height: 24px;
+            fill: var(--color-bg);
+        }
+        
+        /* Info Section */
+        .info-section {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            padding: 2rem;
+            margin-top: 3rem;
+            animation: fadeIn 0.6s ease 0.7s both;
+        }
+        
+        .info-item {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--color-border);
+        }
+        
+        .info-item:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+        
+        .info-label {
+            font-size: 0.95rem;
+            color: var(--color-primary);
+            font-weight: 700;
+            min-width: 80px;
+            flex-shrink: 0;
+        }
+        
+        .info-value {
+            font-size: 0.95rem;
+            color: var(--color-text-secondary);
+            line-height: 1.8;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            header {
+                padding: 1rem 1.2rem;
+            }
+            
+            h1 {
+                font-size: 1.2rem;
+            }
+            
+            .subtitle {
+                font-size: 0.75rem;
+            }
+            
+            .detail-content {
+                padding: 5rem 1.2rem 3rem;
+            }
+            
+            .detail-title {
+                font-size: 2rem;
+            }
+            
+            .image-gallery {
+                height: 280px;
+            }
+            
+            .detail-description {
+                font-size: 1rem;
+            }
+            
+            .audio-button {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .info-section {
+                padding: 1.5rem;
+            }
+        }
+        
+        /* Leaflet Popup Styling */
+        .leaflet-popup-content-wrapper {
+            background: var(--color-surface-elevated);
+            color: var(--color-text);
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+        }
+        
+        .leaflet-popup-content {
+            margin: 1rem;
+            font-family: 'Noto Serif TC', serif;
+        }
+        
+        .leaflet-popup-tip {
+            background: var(--color-surface-elevated);
+            border: 1px solid var(--color-border);
+        }
+        
+        .popup-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--color-primary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .popup-link {
+            display: inline-block;
+            margin-top: 0.5rem;
+            color: var(--color-primary-light);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s ease;
+        }
+        
+        .popup-link:hover {
+            color: var(--color-primary);
+        }
+        
+        /* Loading */
+        .loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1000;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid var(--color-border);
+            border-top-color: var(--color-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="header-content">
+            <div>
+                <h1>萬華艋舺</h1>
+                <div class="subtitle">歷史街區導覽</div>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Map View -->
+    <div id="map-view">
+        <div id="map"></div>
+    </div>
+    
+    <!-- Detail View -->
+    <div id="detail-view">
+        <div class="back-button" onclick="closeDetail()">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+        </div>
+        
+        <div class="detail-content">
+            <span class="detail-number" id="detail-number"></span>
+            <h2 class="detail-title" id="detail-title"></h2>
+            
+            <div class="image-gallery" id="image-gallery">
+                <div class="gallery-track" id="gallery-track"></div>
+                <div class="gallery-nav prev" onclick="prevImage()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                </div>
+                <div class="gallery-nav next" onclick="nextImage()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                </div>
+                <div class="gallery-controls" id="gallery-controls"></div>
+            </div>
+            
+            <div class="detail-description" id="detail-description"></div>
+            
+            <button class="audio-button" id="audio-button" onclick="toggleAudio()">
+                <svg class="audio-icon" viewBox="0 0 24 24">
+                    <path d="M11 5L6 9H2v6h4l5 4V5z"/>
+                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
+                </svg>
+                <span id="audio-text">播放語音導覽</span>
+            </button>
+            
+            <div class="info-section" id="info-section"></div>
+        </div>
+    </div>
+    
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <script>
+        // Points data from CSV
+        const points = [
+            {
+                no: 1,
+                title: "剝皮寮歷史街區",
+                location: [25.03683, 121.50216],
+                description: `在大清帝國時代,這裡的先民結合了當時最先進的建築技術來造漢人的街屋,以磚石為主,木材為輔,外牆部分至今仍可以看到騎樓位置以火庫起疊柱工法加上一字型壽樑來支撐的「亭仔腳」,當時以木頭纖維的彈性及拉力來抵抗地震。
+
+日本帝國統治時,剝皮寮街區經過市區改正計畫而開闢道路,原本的剝皮寮古道反倒成了較小的巷弄,新闢的康定路、廣州街和昆明街區出現了大量當時流行的日式風格建物,立面整齊劃一,騎樓寬敞舒適並且用洗石子和國防色磚來進行裝修,牌樓厝也加上泥塑裝飾,用以辨識姓氏或家族職業,這裡保存下了當時日本總督府形式的辰野式風格建築和泥塑花台。
+
+在經過文史勘查後,此地的歷史風貌特色及文化價值應該予以存續,不該被拆除,成為老松國小的校地。經過再多方交涉下剝皮寮被登錄為歷史建築群得以保存下來不做開發,日後將以歷史街區的方式經營下去。`,
+                images: ["01-1.jpg", "01-2.jpg", "01-3.jpg"],
+                address: "台北市萬華區康定路173巷",
+                hours: "週二至周日：09:00–18:00、周一公休",
+                contact: "02-2302-3199"
+            },
+            {
+                no: 2,
+                title: "福大同茶莊",
+                location: [25.04006, 121.50025],
+                description: `福大同茶莊的歷史不只可在茶葉包裝的商號印章中看到,在貴陽街上已經營六代的這個茶莊,店裡最早的印章是在道光25年刻下的,現已成為鎮店之寶。這裡的第一代茶人從安溪移民來到台灣,帶來知名的鐵觀音,那時候原先為官醫的蔡漢,以茶湯為當時的艋舺碼頭工人調理身體,自此開設茶行,取名為「福大同」,成為在艋舺落地生根的第一代。因醫藥衛生條件不佳,能有學醫的人前來幫助調理身體給予諮詢,對於當地人來說極為重要,也將帶來的鐵觀音奉為上品。
+
+五代根基所留下來的茶藝知識,加上在地經營已久的地方信任關係,使得六代茶行能夠屹立不搖,穩穩地在萬華深耕經營,能從福大同的店家故事裡,看見每一代人的努力拚搏,不斷的轉型提升,將茶人文化永續傳承。`,
+                images: ["02-1.jpg", "02-2.jpg", "02-3.jpg"],
+                address: "108台北市萬華區貴陽街二段196號",
+                hours: "週一至週六：10:00–19:00、週日：11:00–18:30",
+                contact: "02-23756527"
+            },
+            {
+                no: 3,
+                title: "台灣基督長老教會艋舺教會",
+                location: [25.03955, 121.50316],
+                description: `台灣基督長老教會艋舺教會設教於1876年,但事實上,早在1872年時,馬偕牧師就前來艋舺傳教,當時的艋舺人對於這一位黑鬚的基督教傳教士極力排斥,認為外貌不同的馬偕是所謂的「洋教」 ,基於狹隘的民族主義情緒,馬偕牧師在1872年時,被艋舺當地人聯合趕出城外,在城外的馬偕,認為總有一天要回到這裡,以基督的愛讓當地人接受福音。
+
+艋舺教會於1906年聘僱陳清義牧師,並且從中會獨立出來,開始興旺如同馬偕牧師所願,逐漸擴大,並且隨著會眾人數而重建,艋舺教會內共有五寶,分別為馬偕牧師所帶來的百年名琴、友會致贈的「宇宙主宰」,1884年時遠從加拿大來台的福音鐘、艋舺當地鄉紳贈與的「耶穌聖教」石碑及大管風琴。
+
+現今艋舺教會擁有青少年團契,90年歷史的愛心幼稚園,專門為長老服務的松年大學,無論經歷什麼,艋舺教會都能一代一代的傳承下去。`,
+                images: ["03-1.jpg", "03-2.jpg", "03-3.jpg", "03-4.jpg"],
+                address: "108台北市萬華區貴陽街二段94號",
+                hours: "主日禮拜時間：第一場 08:00～09:00 (台語)、第二場 10:00～11:30 (台語/直播)、第三場 11:30～12:30 (華語/直播)",
+                contact: "02-2361-9352"
+            },
+            {
+                no: 4,
+                title: "龍山佛具店",
+                location: [25.03772, 121.49944],
+                description: `1895年時,李邦錄先生帶著妻兒渡海來台,落腳艋舺西園路,由於龍山寺香火鼎盛,便在街上開設店鋪,那時候房子還是木板屋,也是當時第一家佛具店,當時的第一代李邦錄到台灣後,四處為人安神修廟,鼎盛時期曾多天不回來,都在台灣各地山頭為人造神像。
+
+李子勇先生說,早期的神像多半是泥塑,遇到大尊神像時,就必須調整工具,泥塑出基本型像以後,再貼上紙以及進行雕塑加工,來達到成型效果,第二代的李德惠先生採用麻布、生漆和麵粉,能夠做出等人大小的塑像,第三代的李子勇則是進一步改良,以FRP作為塑像材料,並且開模製造頭偶。
+
+對李子勇先生來說,塑像不是問題,每一個上門前來拜託的,都是希望能夠更接近自己的信仰、能夠在藝匠手中具體,接著成為幾代人的傳承與寄託。`,
+                images: ["04-1.jpg", "04-2.jpg"],
+                address: "108台北市萬華區西園路一段142號、144號",
+                hours: "周一至周六09:00-21:00,周日09:00-17:00",
+                contact: "02-2306-6970"
+            },
+            {
+                no: 5,
+                title: "老明玉香舖",
+                location: [25.04027, 121.50089],
+                description: `老明玉香舖創立於1897年,至今在店鋪裡的線香包裝上,都還能看到第一代製香師黃燦的照片。黃燦先生出生於台南,在學會製香後,北上尋找安身立命之處,一路到達艋舺。由於艋舺開發得早,一直以來都是台北人信仰的中心,焚香祝禱成為了台灣人向神明溝通祈願的方法,老明玉香舖的聲譽逐漸傳開。
+
+製香過程需要進口特殊的木材原料,使用浸潤過後的竹枝,沾上黏粉,再沾上檀香沈香各種調製而成的中藥原料,不斷反覆沾黏直到乾燥。製作過程極為辛苦,不能用空調或電扇降溫外,還需在製香過程研究,調整漢方中藥比例。
+
+如今到了講求環保的時代,這個代表神人媒介的傳統產業也面臨全新挑戰。店鋪生意漸淡,卻能看見真正愛香的人們上門前來購買,其中不乏國際觀光客,經由推薦或報導得知老明玉的故事,特意前來找尋可以舒緩身心,純正漢方的香。
+無論景氣好壞,老明玉依舊在艋舺深根,製香師們百年來相傳的技藝提供神人間的聯繫,寄望這些香火和祈願,能夠一支一支上達天聽,同時守護艋舺。`,
+                images: ["05-1.jpg", "05-2.jpg", "05-3.jpg"],
+                address: "108台北市萬華區貴陽街二段155號",
+                hours: "週一至週日：09:00–21:00",
+                contact: "02-2381-5569"
+            },
+            {
+                no: 6,
+                title: "西門紅樓",
+                location: [25.04201, 121.50685],
+                description: `現在的西門紅樓熱鬧輝煌,是台北招待國際觀光客的必經之地,但過去這裡並不叫紅樓,他最早名字是新起町市場,是由近藤十郎先生所設計的建築。建築體分為兩個部分,分別是八角堂和十字樓,近藤先生大膽採用漢人道教八卦意象作為入口,有著風水用意,十字架形狀作為市場主體,提供生鮮食品販售。
+
+1949年,來自上海的陳惠文承租八角堂,在二樓添設戲台及座位,改名為滬園劇場,提供京劇表演,後因口碑不佳,將滬園劇場改為紅樓書場,從此以後,新起町市場逐漸受到淡忘,而被紅樓兩字取代。
+
+1963年時,紅樓因應台灣電影需求,改名紅樓戲院,專播黃梅調及國片,但1970年時,西門町其他戲院的增加,紅樓逐漸從轉為二輪電影院,甚至播放B級片和黃色電影,台灣社會也開始對紅樓存續進行討論,一派主張改建為全新大樓,另一派則主張政府收回妥善營運為文化場館。
+
+1997年,紅樓被列為三級古蹟,市府以調查報告開始規劃進行整修,2000年時西門市場發生大火,違建及周遭建築物遭到嚴重損毀,紅樓的經營及存續再次受到關注,此時紅樓及西門市場逐漸開始應合。
+
+2007年,紅樓劇場轉交給台北市政府文化局下的文化基金會營運管理,文基會引入文創觀念,取名為西門紅樓,並且營運之今。現在的紅樓不只是觀光的景點,更是展現城市包容力的驕傲之地。`,
+                images: ["06-1.jpg", "06-2.jpg", "06-3.jpg"],
+                address: "108台北市萬華區成都路10號",
+                hours: "週二~週四 11:00-20:00、週五 11:00-21:00、週六 11:00-22:00、週日 11:00-21:00",
+                contact: "02-2311-9380"
+            },
+            {
+                no: 7,
+                title: "川業肉圓",
+                location: [25.03672, 121.5013],
+                description: `川業肉圓(原新竹肉圓)第一代的陳承業原先是一名漁夫,在船難獲救後對於出海心有餘悸因此決心改行,向家鄉的福州老師傅學習做肉圓和貢丸湯,初期在新竹城隍廟擺攤叫賣,但由於新竹一帶肉圓店家競爭激烈,於是決定北上,搬到萬華龍山寺一帶以鐵馬販售肉圓及貢丸湯,那時候正好是民國初年,廟宇及戲院周遭人聲鼎沸,人潮即錢潮,新竹的肉圓店因此留了下來,也以這一年作為肉圓店開創的時間,是萬華最早賣貢丸的店。
+
+不只是最早的貢丸肉圓店,川業肉圓的歷史故事裡,有著在地人欣賞的拚搏和傳承,不只一代人對這家店有記憶,老顧客同時也見證了腳踏車攤變二輪推車,推車變成小攤,接著變成露店攤棚後搬進公有市場,最後自行租屋開張成為獨立店鋪的歷史。`,
+                images: ["07-1.jpg", "07-2.jpg", "07-3.jpg"],
+                address: "108台北市萬華區廣州街165號1樓",
+                hours: "週一至週日：10:00–21:00",
+                contact: "02-2308-1641"
+            },
+            {
+                no: 8,
+                title: "兩喜號",
+                location: [25.03614, 121.49923],
+                description: `兩喜號第一代的陳兩喜先生在18歲時用扁擔挑著魷魚羹來賣,那時候龍山寺旁香客絡繹不絕。獨創的魷魚羹同時有兩種口味,稱之為「兩喜」,第一種是大塊過癮,爽脆大口的鮮魷魚條,另一種則是他每天親手捏的旗魚丸。湯頭甜美,旗魚丸大顆新鮮加上魷魚鮮美,這家小攤在第一代就已經奠定了口碑。
+
+第四代陳輿安接手後,建立SOP並且裝潢店面,更新菜單供國際客選擇,也同時與Uber Eats合作,開始分析每家店來客時間與比例,調整不同地區魷魚的處理方式。
+
+今天的兩喜號,依舊端出那一碗讓所有的遊客「兩喜」的魷魚羹,不只食物百年美味,四代老店更見證了艋舺人堅毅和拚搏的精神。`,
+                images: ["08-1.jpg", "08-2.jpg", "08-3.jpg"],
+                address: "108台北市萬華區西園路一段194號",
+                hours: "週一至週六：10:00–23:30",
+                contact: "02-2336-1129"
+            },
+            {
+                no: 9,
+                title: "台北堂摩那卡本舖",
+                location: [25.03327, 121.50405],
+                description: `現在的摩那卡本舖位於艋舺大道上,第一代李德眉先生於1920進入源田株式會社習藝,他字跡端莊、手藝勤快且聰明從而被源田先生所器重,學習了各種和菓子的製作工法。
+
+往後源田先生甚至一度希望帶著這個年輕的台灣學徒一起回日本,繼續當他的好幫手,但李德眉先生沒有跟著源田先生去日本,表達想留在台灣,於是源田先生在離開台灣之際,將店鋪及所有的工具設備留給了李德眉,包括代表日本皇室的菊花摩那卡模具和貝殼模具。
+
+於是李德眉先生在長沙街掛起了「摩那卡本舖」的商號,對台灣人販售日本皇室點心,純手工製作的最中餅口味美味又新鮮,此時的摩那卡本舖甚至外銷琉球。`,
+                images: ["09-1.jpg", "09-2.jpg"],
+                address: "108台北市萬華區艋舺大道52號",
+                hours: "週一至週六：09:00–18:00(星期日公休)",
+                contact: "02-2336-2024"
+            },
+            {
+                no: 10,
+                title: "富山蒸籠",
+                location: [25.0386, 121.49637],
+                description: `位於桂林路的富山蒸籠,是艋舺過去最大的蒸籠店。第二代的蕭生育今年已經93歲,可以說是國寶級的藝匠,他親眼見證台灣蒸籠和餐飲業的興衰變化。從小就跟著父親和丈人學做蒸籠,手藝奇佳,也因為這一家人的靈巧手藝能夠撐起一家百年蒸籠店。
+
+1945年時蕭生育來台後因兩岸關係無法回去。陰錯陽差之下,蕭生育與岳父一起騎著腳踏車沿公路叫賣蒸籠,專門四處兜售各種蒸籠木桶產品,此時稱為協和蒸籠。1949年搬入中華路店面時,請了算命師取「富貴如山」四字為富山商號店名,蒸籠品質良好又提供保固,加上當時人口增加,蒸籠供不應求,全家老小動員還是來不及應付訂單,蒸籠店在民國50年代時就開始因為廣東菜風行而供不應求。
+
+後因時代變化,純手工的蒸籠價值再度被看見,許多店家發現依舊是富山這樣好品質的手作蒸籠能夠用的比較久,親自前往上門選購,第四代的接班人也開始經營網路,老店透過新時代媒體,繼續服務著上門的來客。像是那些八方雲集營業用的鍋貼蒸蓋,最後依舊選擇富山蒸籠,很多人也或許不知道自己曾經被富山服務過。`,
+                images: ["10-1.jpg", "10-2.jpg", "10-3.jpg"],
+                address: "108台北市萬華區桂林路224巷1號",
+                hours: "週一至週六：09:00–19:00(星期日公休)",
+                contact: "02-2306-0066"
+            },
+            {
+                no: 11,
+                title: "龍城號",
+                location: [25.03639, 121.50242],
+                description: `位於剝皮寮對面的龍城號有一個顯眼的黃色招牌,是萬華人眼中的雞湯名店,而在老萬華人記憶中,也曾經是紅色招牌的「進財麵店」。
+
+第一代麵店老闆洪大目出生於泉州,跟著走船來台後落腳於剝皮寮,1896年,第一代用肩膀挑著扁擔沿街賣麵謀生,一邊扛著鍋爐及高湯,自炸豬皮瀝油熬煮,加上手炒油蔥及高湯,成就這碗饕客喜愛的「膨皮」炸豬皮切仔麵。
+
+在生意穩定以後,洪大目娶郭氏為妻,正式在台灣落地生根,從扁擔到攤車都是同樣味道相傳,一直到父子在龍山寺旁搭設鐵皮屋,才有了自己的露店,並交由第二代進財接手,故此有了進財麵店之名。而龍山寺旁不遠處就是一排廣州街的跌打損傷行,當時稱為跌打損傷街,那裏有著康家的龍城號,專賣各式補湯。進財麵店後來與龍城號結為親家,因此有著這樣的店名。
+
+來到龍城號,可以看到台灣家族代代努力,一支扁擔起家,步步經營品項並發揚光大的故事。`,
+                images: ["11-1.jpg"],
+                address: "108台北市萬華區廣州街94號",
+                hours: "週二至週日：10:30–19:00、星期一公休",
+                contact: "02-2336-7668"
+            },
+            {
+                no: 12,
+                title: "德安青草店",
+                location: [25.03693, 121.50034],
+                description: `德安青草店的歷史與艋舺密不可分,在先民墾荒時代,艋舺就有用草藥茶湯替人調養身體的記載,那時的醫療資源極為稀有珍貴,當人們有了傷寒病痛甚至各種疑難雜症,便到龍山寺求取藥籤,根據藥籤本上的紀錄,再抓取草葉治病。
+
+根據藥籤的內容採購青草調養補身或治療各種皮膚疾病,青草由於天然無副作用,價格又負擔的起,就此變成了救命的良方,也讓龍山寺旁的這些青草攤有了「救命巷」之稱。
+
+青草店及救命巷,逐漸被現代醫學與健保普及化替代,也因為宮廟停止提供藥籤,青草店紛紛走入歷史,傳統替人治病的青草店必須另求生路,運用專業知識繼續經營下去,第三代簡宜賢開始轉型,研發養生飲品包,推出青草藥膳食坊,並與其他店鋪合作,配送提供各種客製化茶飲,也供給當地餐廳做為料理。`,
+                images: ["12-1.jpg", "12-2.jpg"],
+                address: "108台北市萬華區西昌街224巷11號",
+                hours: "週一至週六：09:00–18:00、週日10:30-18:00",
+                contact: "02-2308-5549"
+            },
+            {
+                no: 13,
+                title: "龍都冰菓室",
+                location: [25.03519, 121.49733],
+                description: `台灣俗諺中有一句說「第一賣冰,第二做醫生」,反映的是冰品的需求大,人人都需要吃冰,而在萬華吃冰,人們第一時間想到的便是龍都,這家冰店從挑扁擔沿街叫賣起家,經過三代人的努力,成為了艋舺人共同回憶,並且也見證了台灣冷鏈系統及冰品的進步歷史。
+
+1998年,龍都落腳於廣州街,並改名為「龍都冰菓專業家」,這樣的店名與堅持自己熬製糖膏及各式冰品佐料的精神相符,也因為冰品美味,佐料用心,而聞名於全台,龍都的招牌為八寶冰,裡面所用到的所有花生、紅豆、花豆、脆圓、湯圓、芋圓、綠豆、芋頭全是自己家廚房熬製,被稱為「龍都冰」,成為各大行腳節目的必經景點。
+
+在2020年,龍都開業百年之際搬遷到和平西路上,第四代正在操作著刨冰機,父親開始用計時器計算出不同的材料該熬煮的時間,一家人捧著招牌的冰品,淋上祖傳熬製而成的糖漿,將美味冰品傳承下去。`,
+                images: ["13-1.jpg", "13-2.jpg", "13-3.jpg"],
+                address: "108台北市萬華區和平西路三段192號",
+                hours: "週四至週二：11:30–22:00、周一公休",
+                contact: "02-2308-2227"
+            }
+        ];
+        
+        // Global variables
+        let map;
+        let currentPoint = null;
+        let currentImageIndex = 0;
+        let speechSynthesis = window.speechSynthesis;
+        let currentUtterance = null;
+        let isPlaying = false;
+        
+        // Initialize map
+        function initMap() {
+            map = L.map('map').setView([25.0378, 121.5012], 15);
+            
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 19
+            }).addTo(map);
+            
+            // Add markers
+            points.forEach(point => {
+                const marker = L.marker(point.location, {
+                    icon: L.divIcon({
+                        className: 'custom-marker',
+                        iconSize: [32, 32],
+                        iconAnchor: [16, 32]
+                    })
+                }).addTo(map);
+                
+                marker.bindPopup(`
+                    <div class="popup-title">${point.title}</div>
+                    <a href="#" class="popup-link" onclick="showDetail(${point.no - 1}); return false;">查看詳情 →</a>
+                `);
+                
+                marker.on('click', () => {
+                    setTimeout(() => {
+                        const popupLinks = document.querySelectorAll('.popup-link');
+                        popupLinks.forEach(link => {
+                            link.addEventListener('click', (e) => {
+                                e.preventDefault();
+                                showDetail(point.no - 1);
+                            });
+                        });
+                    }, 100);
+                });
+            });
+        }
+        
+        // Show detail page
+        function showDetail(index) {
+            currentPoint = points[index];
+            currentImageIndex = 0;
+            
+            // Stop any playing audio
+            if (isPlaying) {
+                toggleAudio();
+            }
+            
+            // Update content
+            document.getElementById('detail-number').textContent = `NO. ${String(currentPoint.no).padStart(2, '0')}`;
+            document.getElementById('detail-title').textContent = currentPoint.title;
+            document.getElementById('detail-description').textContent = currentPoint.description;
+            
+            // Build image gallery
+            const galleryTrack = document.getElementById('gallery-track');
+            const galleryControls = document.getElementById('gallery-controls');
+            galleryTrack.innerHTML = '';
+            galleryControls.innerHTML = '';
+            
+            currentPoint.images.forEach((img, i) => {
+                const slide = document.createElement('div');
+                slide.className = 'gallery-slide';
+                slide.innerHTML = `<img src="https://raw.githubusercontent.com/yourusername/yourrepo/main/images/${img}" alt="${currentPoint.title} ${i + 1}" onerror="this.src='https://via.placeholder.com/800x400/1a1816/d4af37?text=${encodeURIComponent(currentPoint.title)}'">`;
+                galleryTrack.appendChild(slide);
+                
+                const dot = document.createElement('div');
+                dot.className = `gallery-dot ${i === 0 ? 'active' : ''}`;
+                dot.onclick = () => goToImage(i);
+                galleryControls.appendChild(dot);
+            });
+            
+            // Build info section
+            const infoSection = document.getElementById('info-section');
+            infoSection.innerHTML = `
+                <div class="info-item">
+                    <div class="info-label">➤ 地址</div>
+                    <div class="info-value">${currentPoint.address}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">➤ 營業時間</div>
+                    <div class="info-value">${currentPoint.hours}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">➤ 聯絡方式</div>
+                    <div class="info-value">${currentPoint.contact}</div>
+                </div>
+            `;
+            
+            // Show detail view
+            document.getElementById('detail-view').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        // Close detail page
+        function closeDetail() {
+            // Stop any playing audio
+            if (isPlaying) {
+                toggleAudio();
+            }
+            
+            document.getElementById('detail-view').classList.remove('active');
+            document.body.style.overflow = 'auto';
+            currentPoint = null;
+        }
+        
+        // Image gallery navigation
+        function goToImage(index) {
+            currentImageIndex = index;
+            const track = document.getElementById('gallery-track');
+            track.style.transform = `translateX(-${index * 100}%)`;
+            
+            const dots = document.querySelectorAll('.gallery-dot');
+            dots.forEach((dot, i) => {
+                dot.classList.toggle('active', i === index);
+            });
+        }
+        
+        function prevImage() {
+            const newIndex = currentImageIndex > 0 ? currentImageIndex - 1 : currentPoint.images.length - 1;
+            goToImage(newIndex);
+        }
+        
+        function nextImage() {
+            const newIndex = currentImageIndex < currentPoint.images.length - 1 ? currentImageIndex + 1 : 0;
+            goToImage(newIndex);
+        }
+        
+        // Audio playback
+        function toggleAudio() {
+            const button = document.getElementById('audio-button');
+            const text = document.getElementById('audio-text');
+            
+            if (isPlaying) {
+                speechSynthesis.cancel();
+                isPlaying = false;
+                button.classList.remove('playing');
+                text.textContent = '播放語音導覽';
+            } else {
+                const utterance = new SpeechSynthesisUtterance(currentPoint.description);
+                utterance.lang = 'zh-TW';
+                utterance.rate = 0.9;
+                utterance.pitch = 1;
+                
+                utterance.onend = () => {
+                    isPlaying = false;
+                    button.classList.remove('playing');
+                    text.textContent = '播放語音導覽';
+                };
+                
+                speechSynthesis.speak(utterance);
+                currentUtterance = utterance;
+                isPlaying = true;
+                button.classList.add('playing');
+                text.textContent = '停止播放';
+            }
+        }
+        
+        // Auto-advance gallery
+        let galleryInterval;
+        function startGalleryAutoPlay() {
+            galleryInterval = setInterval(() => {
+                if (currentPoint && currentPoint.images.length > 1) {
+                    nextImage();
+                }
+            }, 5000);
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            initMap();
+            startGalleryAutoPlay();
+        });
+        
+        // Stop audio when leaving page
+        window.addEventListener('beforeunload', () => {
+            if (isPlaying) {
+                speechSynthesis.cancel();
+            }
+        });
+    </script>
+</body>
+</html>
