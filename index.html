@@ -26,560 +26,1051 @@
             --secondary-40: #b0a99c;
             
             /* Tertiary Colors */
-            --tertiary-60: #b89076;
-            --tertiary-50: #c9a184;
-            --tertiary-40: #dab292;
+            --tertiary-60: #747474;
+            --tertiary-50: #8b8b8b;
             
-            /* Neutral Colors */
-            --neutral-90: #1f1f1f;
-            --neutral-80: #333333;
-            --neutral-70: #4d4d4d;
-            --neutral-60: #666666;
-            --neutral-50: #808080;
-            --neutral-40: #999999;
-            --neutral-30: #b3b3b3;
-            --neutral-20: #cccccc;
-            --neutral-10: #e6e6e6;
-            --neutral-5: #f2f2f2;
-            --neutral-0: #ffffff;
+            /* Background Colors */
+            --bg-primary: #0a0908;
+            --bg-secondary: #1a1816;
+            --bg-tertiary: #262320;
             
-            /* Typography */
-            --font-family: 'Noto Serif TC', serif;
-            --font-size-title: 24px;
-            --font-size-subtitle: 18px;
-            --font-size-body: 14px;
-            --font-size-caption: 12px;
+            /* Surface Colors */
+            --surface-dim: #0a0908;
+            --surface: #1a1816;
+            --surface-bright: #262320;
             
-            /* Spacing */
-            --space-xs: 4px;
-            --space-sm: 8px;
-            --space-md: 16px;
-            --space-lg: 24px;
-            --space-xl: 32px;
+            /* Text Colors */
+            --text-primary: #e8e6e3;
+            --text-secondary: #a8a5a0;
+            --text-tertiary: #6b6860;
             
-            /* Border Radius */
-            --radius-sm: 8px;
-            --radius-md: 12px;
-            --radius-lg: 16px;
-            
-            /* Shadows */
-            --shadow-sm: 0 2px 8px rgba(0,0,0,0.08);
-            --shadow-md: 0 4px 16px rgba(0,0,0,0.12);
-            --shadow-lg: 0 8px 32px rgba(0,0,0,0.16);
+            /* Border Colors */
+            --border-primary: #332f2a;
+            --border-secondary: #262320;
         }
-
+        
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-
+        
         body {
-            font-family: var(--font-family);
-            background: var(--neutral-0);
-            color: var(--neutral-90);
+            font-family: 'Noto Serif TC', serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
             overflow-x: hidden;
-            height: 100vh;
         }
-
-        /* Map Container */
-        #map {
+        
+        /* Header */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: linear-gradient(180deg, rgba(10,9,8,0.98) 0%, rgba(10,9,8,0.9) 100%);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-primary);
+            padding: 0.8rem 1.5rem;
+            animation: slideDown 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        
+        /* Hide header when detail view is active */
+        body.detail-active header {
+            display: none;
+        }
+        
+        @keyframes slideDown {
+            from {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        
+        h1 {
+            font-family: 'Noto Serif TC', serif;
+            font-size: 1.3rem;
+            font-weight: 900;
+            color: var(--primary-60);
+            letter-spacing: 0.1em;
+            margin-bottom: 0.2rem;
+        }
+        
+        .subtitle {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            font-weight: 400;
+            letter-spacing: 0.2em;
+        }
+        
+        /* Map View */
+        #map-view {
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
             height: 100vh;
-            position: relative;
             z-index: 1;
         }
-
-        /* Custom Marker */
+        
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+        
+        /* Custom Leaflet Marker */
         .custom-marker {
             background: var(--primary-60);
-            border: 3px solid var(--neutral-0);
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            box-shadow: var(--shadow-sm);
+            width: 36px;
+            height: 36px;
+            border-radius: 50% 50% 50% 0;
+            transform: rotate(-45deg);
+            border: 3px solid var(--bg-primary);
+            box-shadow: 0 4px 16px rgba(201,169,97,0.5);
             cursor: pointer;
             transition: all 0.3s ease;
         }
-
+        
         .custom-marker:hover {
-            transform: scale(1.2);
-            background: var(--primary-50);
+            transform: rotate(-45deg) scale(1.2);
+            box-shadow: 0 6px 24px rgba(201,169,97,0.7);
         }
-
-        /* Detail Panel */
-        .detail-panel {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: var(--neutral-0);
-            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-            box-shadow: var(--shadow-lg);
-            transform: translateY(100%);
-            transition: transform 0.3s ease;
-            z-index: 1000;
-            max-height: 80vh;
-            overflow-y: auto;
+        
+        .custom-marker::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(45deg);
+            width: 10px;
+            height: 10px;
+            background: var(--bg-primary);
+            border-radius: 50%;
         }
-
-        .detail-panel.active {
-            transform: translateY(0);
-        }
-
-        .detail-header {
-            padding: var(--space-md);
-            border-bottom: 1px solid var(--neutral-10);
-            position: sticky;
-            top: 0;
-            background: var(--neutral-0);
-            z-index: 10;
-        }
-
-        .detail-handle {
-            width: 40px;
-            height: 4px;
-            background: var(--neutral-20);
-            border-radius: 2px;
-            margin: 0 auto var(--space-sm);
-        }
-
-        .detail-title {
-            font-size: var(--font-size-subtitle);
-            font-weight: 700;
-            color: var(--neutral-90);
-            text-align: center;
-            margin-bottom: var(--space-xs);
-        }
-
-        .detail-location {
-            font-size: var(--font-size-caption);
-            color: var(--neutral-60);
-            text-align: center;
-        }
-
-        .detail-content {
-            padding: var(--space-md);
-        }
-
-        .detail-gallery {
-            width: 100%;
-            height: 200px;
-            border-radius: var(--radius-md);
+        
+        /* Leaflet Popup Styling */
+        .leaflet-popup-content-wrapper {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-primary);
+            border-radius: 10px;
+            box-shadow: 0 12px 32px rgba(0,0,0,0.5);
+            padding: 0;
             overflow: hidden;
-            margin-bottom: var(--space-md);
-            position: relative;
+            min-width: 220px;
+            max-width: 250px;
         }
-
-        .gallery-image {
+        
+        .leaflet-popup-content {
+            margin: 0;
+            font-family: 'Noto Serif TC', serif;
+        }
+        
+        .leaflet-popup-tip {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-primary);
+        }
+        
+        .popup-card {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .popup-image {
+            width: 100%;
+            height: 140px;
+            object-fit: cover;
+            display: block;
+            background: var(--surface);
+        }
+        
+        .popup-content {
+            padding: 1rem;
+        }
+        
+        .popup-number {
+            display: none;
+        }
+        
+        .popup-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--primary-60);
+            margin-bottom: 0.8rem;
+            line-height: 1.4;
+        }
+        
+        .popup-button {
+            display: block;
+            width: 100%;
+            background: var(--primary-60);
+            color: var(--bg-primary);
+            text-align: center;
+            padding: 0.6rem 1rem;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 700;
+            border: 1px solid var(--primary-60);
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            letter-spacing: 0.05em;
+        }
+        
+        .popup-button:hover {
+            background: var(--primary-50);
+            border-color: var(--primary-50);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(201,169,97,0.3);
+        }
+        
+        /* Detail View */
+        #detail-view {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: var(--bg-primary);
+            z-index: 100;
+            display: none;
+            animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        
+        #detail-view.active {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        @keyframes slideUp {
+            from {
+                transform: translateY(100%);
+            }
+            to {
+                transform: translateY(0);
+            }
+        }
+        
+        .back-button {
+            position: fixed;
+            top: 1.5rem;
+            left: 1.5rem;
+            z-index: 101;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-primary);
+            border-radius: 8px;
+            padding: 0.7rem 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            font-family: 'Noto Serif TC', serif;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        
+        .back-button:hover {
+            background: var(--primary-60);
+            border-color: var(--primary-60);
+            color: var(--bg-primary);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(201,169,97,0.4);
+        }
+        
+        .back-button svg {
+            width: 18px;
+            height: 18px;
+            stroke: var(--text-primary);
+            transition: stroke 0.3s ease;
+        }
+        
+        .back-button:hover svg {
+            stroke: var(--bg-primary);
+        }
+        
+        .detail-scroll-area {
+            flex: 1;
+            overflow-y: auto;
+            padding-bottom: 180px;
+        }
+        
+        .detail-content {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 5rem 1.5rem 5rem;
+        }
+        
+        .detail-number {
+            display: none;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .detail-title {
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: var(--primary-60);
+            margin-bottom: 2rem;
+            line-height: 1.3;
+            text-align: center;
+            animation: fadeIn 0.6s ease 0.3s both;
+        }
+        
+        /* Image Gallery */
+        .image-gallery {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            margin-bottom: 3rem;
+            overflow: hidden;
+            border-radius: 12px;
+            border: 1px solid var(--border-primary);
+            animation: fadeIn 0.6s ease 0.4s both;
+        }
+        
+        .gallery-track {
+            display: flex;
+            height: 100%;
+            transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        
+        .gallery-slide {
+            min-width: 100%;
+            height: 100%;
+            position: relative;
+            background: var(--surface);
+        }
+        
+        .gallery-slide img {
             width: 100%;
             height: 100%;
             object-fit: cover;
+            display: block;
         }
-
+        
+        .gallery-controls {
+            position: absolute;
+            bottom: 1.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 0.5rem;
+            z-index: 10;
+        }
+        
+        .gallery-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: rgba(232,230,227,0.3);
+            border: 1px solid rgba(232,230,227,0.5);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .gallery-dot.active {
+            background: var(--primary-60);
+            border-color: var(--primary-60);
+            transform: scale(1.3);
+        }
+        
         .gallery-nav {
             position: absolute;
             top: 50%;
             transform: translateY(-50%);
-            background: rgba(0,0,0,0.5);
-            color: white;
-            border: none;
             width: 40px;
             height: 40px;
+            background: rgba(10,9,8,0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-primary);
             border-radius: 50%;
-            cursor: pointer;
-            font-size: 18px;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: background 0.3s ease;
-        }
-
-        .gallery-nav:hover {
-            background: rgba(0,0,0,0.7);
-        }
-
-        .gallery-nav.prev {
-            left: 10px;
-        }
-
-        .gallery-nav.next {
-            right: 10px;
-        }
-
-        .gallery-indicators {
-            position: absolute;
-            bottom: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 8px;
-        }
-
-        .indicator {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.5);
             cursor: pointer;
-            transition: background 0.3s ease;
-        }
-
-        .indicator.active {
-            background: rgba(255,255,255,1);
-        }
-
-        .detail-description {
-            font-size: var(--font-size-body);
-            line-height: 1.6;
-            color: var(--neutral-70);
-            margin-bottom: var(--space-lg);
-        }
-
-        /* Audio Button */
-        .audio-button-container {
-            position: fixed;
-            bottom: var(--space-md);
-            right: var(--space-md);
-            z-index: 999;
-        }
-
-        .audio-button {
-            background: var(--primary-60);
-            color: var(--neutral-0);
-            border: none;
-            border-radius: 50px;
-            padding: var(--space-md) var(--space-lg);
-            font-family: var(--font-family);
-            font-size: var(--font-size-body);
-            font-weight: 500;
-            cursor: pointer;
-            box-shadow: var(--shadow-md);
-            display: flex;
-            align-items: center;
-            gap: var(--space-sm);
             transition: all 0.3s ease;
+            z-index: 10;
         }
-
-        .audio-button:hover {
-            background: var(--primary-50);
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-lg);
+        
+        .gallery-nav:hover {
+            background: var(--primary-60);
+            border-color: var(--primary-60);
         }
-
-        .audio-button:disabled {
-            background: var(--neutral-30);
-            cursor: not-allowed;
-            transform: none;
+        
+        .gallery-nav.prev {
+            left: 1rem;
         }
-
-        .audio-button.playing {
-            background: var(--tertiary-60);
+        
+        .gallery-nav.next {
+            right: 1rem;
         }
-
-        .audio-icon {
+        
+        .gallery-nav svg {
             width: 20px;
             height: 20px;
-            fill: currentColor;
+            stroke: var(--text-primary);
         }
-
-        /* Close Button */
-        .close-button {
-            position: absolute;
-            top: var(--space-md);
-            right: var(--space-md);
-            background: var(--neutral-5);
-            border: none;
-            border-radius: 50%;
-            width: 32px;
-            height: 32px;
-            cursor: pointer;
+        
+        .gallery-nav:hover svg {
+            stroke: var(--bg-primary);
+        }
+        
+        /* Description */
+        .detail-description {
+            font-size: 1.1rem;
+            line-height: 2;
+            color: var(--text-primary);
+            white-space: pre-line;
+            animation: fadeIn 0.6s ease 0.5s both;
+        }
+        
+        /* Fixed Audio Button */
+        .audio-button-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 102;
+            background: linear-gradient(0deg, var(--bg-primary) 70%, transparent 100%);
+            padding: 1.5rem 1.5rem 2rem;
+            pointer-events: none;
+        }
+        
+        .audio-button {
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: background 0.3s ease;
+            gap: 0.8rem;
+            background: var(--primary-60);
+            color: var(--bg-primary);
+            border: 1px solid var(--primary-60);
+            padding: 1.1rem 2rem;
+            border-radius: 12px;
+            font-family: 'Noto Serif TC', serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 20px rgba(201,169,97,0.4);
+            max-width: 900px;
+            margin: 0 auto;
+            width: 100%;
+            pointer-events: auto;
         }
-
-        .close-button:hover {
-            background: var(--neutral-10);
+        
+        .audio-button:hover {
+            background: var(--primary-50);
+            border-color: var(--primary-50);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 28px rgba(201,169,97,0.5);
         }
-
+        
+        .audio-button:active {
+            transform: translateY(0);
+        }
+        
+        .audio-button.playing {
+            background: var(--secondary-60);
+            border-color: var(--secondary-60);
+        }
+        
+        .audio-icon {
+            width: 24px;
+            height: 24px;
+            fill: var(--bg-primary);
+        }
+        
         /* Responsive */
         @media (max-width: 768px) {
-            .detail-panel {
-                max-height: 85vh;
+            header {
+                padding: 1rem 1.2rem;
             }
             
-            .detail-gallery {
-                height: 180px;
+            h1 {
+                font-size: 1.4rem;
+            }
+            
+            .subtitle {
+                font-size: 0.8rem;
+            }
+            
+            .back-button {
+                top: 1rem;
+                left: 1rem;
+                padding: 0.6rem 1rem;
+                font-size: 0.85rem;
+            }
+            
+            .detail-content {
+                padding: 4rem 1.2rem 5rem;
+            }
+            
+            .detail-title {
+                font-size: 2rem;
+            }
+            
+            .image-gallery {
+                height: 280px;
+            }
+            
+            .detail-description {
+                font-size: 1rem;
+            }
+            
+            .audio-button-container {
+                padding: 1rem 1rem 1.5rem;
             }
             
             .audio-button {
-                padding: var(--space-sm) var(--space-md);
-                font-size: var(--font-size-caption);
+                padding: 1rem 1.5rem;
+                font-size: 1rem;
             }
+            
+            .leaflet-popup-content-wrapper {
+                min-width: 200px;
+                max-width: 230px;
+            }
+            
+            .popup-image {
+                height: 120px;
+            }
+        }
+        
+        /* Scrollbar Styling */
+        .detail-scroll-area::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .detail-scroll-area::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+        
+        .detail-scroll-area::-webkit-scrollbar-thumb {
+            background: var(--secondary-60);
+            border-radius: 4px;
+        }
+        
+        .detail-scroll-area::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-60);
         }
     </style>
 </head>
 <body>
-    <div id="map"></div>
+    <!-- Header -->
+    <header>
+        <div class="header-content">
+            <h1>萬華艋舺</h1>
+            <div class="subtitle">歷史街區導覽</div>
+        </div>
+    </header>
     
-    <!-- Detail Panel -->
-    <div class="detail-panel" id="detail-panel">
-        <div class="detail-header">
-            <div class="detail-handle"></div>
-            <button class="close-button" onclick="closeDetailPanel()">
-                ✕
-            </button>
-            <div class="detail-title" id="detail-title"></div>
-            <div class="detail-location" id="detail-location"></div>
-        </div>
-        <div class="detail-content">
-            <div class="detail-gallery" id="detail-gallery">
-                <img class="gallery-image" id="gallery-image" src="" alt="">
-                <button class="gallery-nav prev" onclick="prevImage()">‹</button>
-                <button class="gallery-nav next" onclick="nextImage()">›</button>
-                <div class="gallery-indicators" id="gallery-indicators"></div>
-            </div>
-            <div class="detail-description" id="detail-description"></div>
-        </div>
+    <!-- Map View -->
+    <div id="map-view">
+        <div id="map"></div>
     </div>
     
-    <div class="audio-button-container">
-        <button class="audio-button" id="audio-button" onclick="toggleAudio()">
-            <svg class="audio-icon" viewBox="0 0 24 24">
-                <path d="M11 5L6 9H2v6h4l5 4V5z"/>
-                <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
+    <!-- Detail View -->
+    <div id="detail-view">
+        <div class="back-button" onclick="closeDetail()">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="15 18 9 12 15 6"></polyline>
             </svg>
-            <span id="audio-text">朗讀介紹</span>
-        </button>
-
-        <!-- ✅ 用固定的 audio 元素播放（手機更穩），並支援 iOS inline -->
-        <audio id="ttsAudio" playsinline></audio>
+            <span>返回地圖</span>
+        </div>
+        
+        <div class="detail-scroll-area">
+            <div class="detail-content">
+                <span class="detail-number" id="detail-number"></span>
+                <h2 class="detail-title" id="detail-title"></h2>
+                
+                <div class="image-gallery" id="image-gallery">
+                    <div class="gallery-track" id="gallery-track"></div>
+                    <div class="gallery-nav prev" onclick="prevImage()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                        </svg>
+                    </div>
+                    <div class="gallery-nav next" onclick="nextImage()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </div>
+                    <div class="gallery-controls" id="gallery-controls"></div>
+                </div>
+                
+                <div class="detail-description" id="detail-description"></div>
+            </div>
+        </div>
+        
+        <div class="audio-button-container">
+            <button class="audio-button" id="audio-button" onclick="toggleAudio()">
+                <svg class="audio-icon" viewBox="0 0 24 24">
+                    <path d="M11 5L6 9H2v6h4l5 4V5z"/>
+                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
+                </svg>
+                <span id="audio-text">朗讀介紹</span>
+            </button>
+        </div>
     </div>
-
+    
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     
     <script>
-        // Map Data
+        // Backend API URL - 部署後請更新這個網址
+        const BACKEND_API_URL = 'https://tourmaptest.vercel.app/api/tts';
+        // 部署完成後，將上面的網址改成 Vercel 給您的網址
+        
+        // Points data from CSV
         const points = [
             {
-                id: 1,
-                name: "龍山寺",
-                location: "台北市萬華區廣州街211號",
-                lat: 25.0367,
-                lng: 121.4998,
-                images: [
-                    "https://images.unsplash.com/photo-1548013146-72479768bada?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-                    "https://images.unsplash.com/photo-1551854838-212c12ab98f4?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                ],
-                description: "艋舺龍山寺建於清乾隆三年（1738年），是台北最古老的寺廟之一。寺內供奉觀世音菩薩，香火鼎盛，建築融合了閩南式與廣東式的特色，是艋舺地區的重要信仰中心。"
+                no: 1,
+                title: "剝皮寮歷史街區",
+                location: [25.03683, 121.50216],
+                description: `在大清帝國時代,這裡的先民結合了當時最先進的建築技術來造漢人的街屋,以磚石為主,木材為輔,外牆部分至今仍可以看到騎樓位置以火庫起疊柱工法加上一字型壽樑來支撐的「亭仔腳」,當時以木頭纖維的彈性及拉力來抵抗地震。
+
+日本帝國統治時,剝皮寮街區經過市區改正計畫而開闢道路,原本的剝皮寮古道反倒成了較小的巷弄,新闢的康定路、廣州街和昆明街區出現了大量當時流行的日式風格建物,立面整齊劃一,騎樓寬敞舒適並且用洗石子和國防色磚來進行裝修,牌樓厝也加上泥塑裝飾,用以辨識姓氏或家族職業,這裡保存下了當時日本總督府形式的辰野式風格建築和泥塑花台。
+
+在經過文史勘查後,此地的歷史風貌特色及文化價值應該予以存續,不該被拆除,成為老松國小的校地。經過再多方交涉下剝皮寮被登錄為歷史建築群得以保存下來不做開發,日後將以歷史街區的方式經營下去。
+
+
+
+➤ 地址｜台北市萬華區康定路173巷
+➤ 營業時間｜週二至周日：09:00–18:00、周一公休
+➤ 聯絡方式｜02-2302-3199`,
+                images: ["01-1.jpg", "01-2.jpg", "01-3.jpg"]
             },
             {
-                id: 2,
-                name: "剝皮寮歷史街區",
-                location: "台北市萬華區康定路173巷",
-                lat: 25.0378,
-                lng: 121.5009,
-                images: [
-                    "https://images.unsplash.com/photo-1585468274952-66591eb14165?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-                    "https://images.unsplash.com/photo-1585468274952-66591eb14165?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                ],
-                description: "剝皮寮歷史街區保留了清代至日治時期的街屋建築，是台北市少數完整保存的歷史街區。紅磚拱廊、木造結構，見證了艋舺商業繁華的歷史。現為文化展示空間，常舉辦展覽與活動。"
+                no: 2,
+                title: "福大同茶莊",
+                location: [25.04006, 121.50025],
+                description: `福大同茶莊的歷史不只可在茶葉包裝的商號印章中看到,在貴陽街上已經營六代的這個茶莊,店裡最早的印章是在道光25年刻下的,現已成為鎮店之寶。這裡的第一代茶人從安溪移民來到台灣,帶來知名的鐵觀音,那時候原先為官醫的蔡漢,以茶湯為當時的艋舺碼頭工人調理身體,自此開設茶行,取名為「福大同」,成為在艋舺落地生根的第一代。因醫藥衛生條件不佳,能有學醫的人前來幫助調理身體給予諮詢,對於當地人來說極為重要,也將帶來的鐵觀音奉為上品。
+
+五代根基所留下來的茶藝知識,加上在地經營已久的地方信任關係,使得六代茶行能夠屹立不搖,穩穩地在萬華深耕經營,能從福大同的店家故事裡,看見每一代人的努力拚搏,不斷的轉型提升,將茶人文化永續傳承。
+
+
+
+➤ 地址｜108台北市萬華區貴陽街二段196號
+➤ 營業時間｜週一至週六：10:00–19:00、週日：11:00–18:30
+➤ 聯絡方式｜02-23756527`,
+                images: ["02-1.jpg", "02-2.jpg", "02-3.jpg"]
             },
             {
-                id: 3,
-                name: "華西街觀光夜市",
-                location: "台北市萬華區華西街",
-                lat: 25.0372,
-                lng: 121.5004,
-                images: [
-                    "https://images.unsplash.com/photo-1542773998-9325f3f7859f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-                    "https://images.unsplash.com/photo-1542773998-9325f3f7859f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                ],
-                description: "華西街觀光夜市又稱「蛇街」，創立於1950年代，是台北歷史悠久的夜市之一。夜市內有各式小吃攤販，從傳統台灣小吃到異國料理應有盡有，是體驗台北夜生活的好去處。"
+                no: 3,
+                title: "台灣基督長老教會艋舺教會",
+                location: [25.03955, 121.50316],
+                description: `台灣基督長老教會艋舺教會設教於1876年,但事實上,早在1872年時,馬偕牧師就前來艋舺傳教,當時的艋舺人對於這一位黑鬚的基督教傳教士極力排斥,認為外貌不同的馬偕是所謂的「洋教」 ,基於狹隘的民族主義情緒,馬偕牧師在1872年時,被艋舺當地人聯合趕出城外,在城外的馬偕,認為總有一天要回到這裡,以基督的愛讓當地人接受福音。
+
+艋舺教會於1906年聘僱陳清義牧師,並且從中會獨立出來,開始興旺如同馬偕牧師所願,逐漸擴大,並且隨著會眾人數而重建,艋舺教會內共有五寶,分別為馬偕牧師所帶來的百年名琴、友會致贈的「宇宙主宰」,1884年時遠從加拿大來台的福音鐘、艋舺當地鄉紳贈與的「耶穌聖教」石碑及大管風琴。
+
+現今艋舺教會擁有青少年團契,90年歷史的愛心幼稚園,專門為長老服務的松年大學,無論經歷什麼,艋舺教會都能一代一代的傳承下去。
+
+
+
+➤ 地址｜108台北市萬華區貴陽街二段94號
+➤ 聯絡方式｜02-2361-9352
+➤ 主日禮拜時間｜
+第一場：08：00～09：00 (台語)
+第二場：10：00～11：30 (台語/直播)
+第三場：11：30～12：30 (華語/直播)`,
+                images: ["03-1.jpg", "03-2.jpg", "03-3.jpg", "03-4.jpg"]
+            },
+            {
+                no: 4,
+                title: "龍山佛具店",
+                location: [25.03772, 121.49944],
+                description: `1895年時,李邦錄先生帶著妻兒渡海來台,落腳艋舺西園路,由於龍山寺香火鼎盛,便在街上開設店鋪,那時候房子還是木板屋,也是當時第一家佛具店,當時的第一代李邦錄到台灣後,四處為人安神修廟,鼎盛時期曾多天不回來,都在台灣各地山頭為人造神像。
+
+李子勇先生說,早期的神像多半是泥塑,遇到大尊神像時,就必須調整工具,泥塑出基本型像以後,再貼上紙以及進行雕塑加工,來達到成型效果,第二代的李德惠先生採用麻布、生漆和麵粉,能夠做出等人大小的塑像,第三代的李子勇則是進一步改良,以FRP作為塑像材料,並且開模製造頭偶。
+
+對李子勇先生來說,塑像不是問題,每一個上門前來拜託的,都是希望能夠更接近自己的信仰、能夠在藝匠手中具體,接著成為幾代人的傳承與寄託。
+
+
+
+➤ 地址｜108台北市萬華區西園路一段142號、144號
+➤ 營業時間｜周一至周六09:00-21:00,周日09:00-17:00
+➤ 聯絡方式｜02-2306-6970`,
+                images: ["04-1.jpg", "04-2.jpg"]
+            },
+            {
+                no: 5,
+                title: "老明玉香舖",
+                location: [25.04027, 121.50089],
+                description: `老明玉香舖創立於1897年,至今在店鋪裡的線香包裝上,都還能看到第一代製香師黃燦的照片。黃燦先生出生於台南,在學會製香後,北上尋找安身立命之處,一路到達艋舺。由於艋舺開發得早,一直以來都是台北人信仰的中心,焚香祝禱成為了台灣人向神明溝通祈願的方法,老明玉香舖的聲譽逐漸傳開。
+
+製香過程需要進口特殊的木材原料,使用浸潤過後的竹枝,沾上黏粉,再沾上檀香沈香各種調製而成的中藥原料,不斷反覆沾黏直到乾燥。製作過程極為辛苦,不能用空調或電扇降溫外,還需在製香過程研究,調整漢方中藥比例。
+
+如今到了講求環保的時代,這個代表神人媒介的傳統產業也面臨全新挑戰。店鋪生意漸淡,卻能看見真正愛香的人們上門前來購買,其中不乏國際觀光客,經由推薦或報導得知老明玉的故事,特意前來找尋可以舒緩身心,純正漢方的香。
+無論景氣好壞,老明玉依舊在艋舺深根,製香師們百年來相傳的技藝提供神人間的聯繫,寄望這些香火和祈願,能夠一支一支上達天聽,同時守護艋舺。
+
+
+
+➤ 地址｜108台北市萬華區貴陽街二段155號
+➤ 營業時間｜週一至週日：09:00–21:00
+➤ 聯絡方式｜02-2381-5569`,
+                images: ["05-1.jpg", "05-2.jpg", "05-3.jpg"]
+            },
+            {
+                no: 6,
+                title: "西門紅樓",
+                location: [25.04201, 121.50685],
+                description: `現在的西門紅樓熱鬧輝煌,是台北招待國際觀光客的必經之地,但過去這裡並不叫紅樓,他最早名字是新起町市場,是由近藤十郎先生所設計的建築。建築體分為兩個部分,分別是八角堂和十字樓,近藤先生大膽採用漢人道教八卦意象作為入口,有著風水用意,十字架形狀作為市場主體,提供生鮮食品販售。
+
+1949年,來自上海的陳惠文承租八角堂,在二樓添設戲台及座位,改名為滬園劇場,提供京劇表演,後因口碑不佳,將滬園劇場改為紅樓書場,從此以後,新起町市場逐漸受到淡忘,而被紅樓兩字取代。
+
+1963年時,紅樓因應台灣電影需求,改名紅樓戲院,專播黃梅調及國片,但1970年時,西門町其他戲院的增加,紅樓逐漸從轉為二輪電影院,甚至播放B級片和黃色電影,台灣社會也開始對紅樓存續進行討論,一派主張改建為全新大樓,另一派則主張政府收回妥善營運為文化場館。
+
+1997年,紅樓被列為三級古蹟,市府以調查報告開始規劃進行整修,2000年時西門市場發生大火,違建及周遭建築物遭到嚴重損毀,紅樓的經營及存續再次受到關注,此時紅樓及西門市場逐漸開始應合。
+
+2007年,紅樓劇場轉交給台北市政府文化局下的文化基金會營運管理,文基會引入文創觀念,取名為西門紅樓,並且營運之今。現在的紅樓不只是觀光的景點,更是展現城市包容力的驕傲之地。
+
+
+
+➤ 地址｜108台北市萬華區成都路10號
+➤ 營業時間｜
+週二~週四 11:00-20:00
+週五 11:00-21:00
+週六 11:00-22:00
+週日 11:00-21:00
+➤ 聯絡方式｜02-2311-9380`,
+                images: ["06-1.jpg", "06-2.jpg", "06-3.jpg"]
+            },
+            {
+                no: 7,
+                title: "川業肉圓",
+                location: [25.03672, 121.5013],
+                description: `川業肉圓(原新竹肉圓)第一代的陳承業原先是一名漁夫,在船難獲救後對於出海心有餘悸因此決心改行,向家鄉的福州老師傅學習做肉圓和貢丸湯,初期在新竹城隍廟擺攤叫賣,但由於新竹一帶肉圓店家競爭激烈,於是決定北上,搬到萬華龍山寺一帶以鐵馬販售肉圓及貢丸湯,那時候正好是民國初年,廟宇及戲院周遭人聲鼎沸,人潮即錢潮,新竹的肉圓店因此留了下來,也以這一年作為肉圓店開創的時間,是萬華最早賣貢丸的店。
+
+不只是最早的貢丸肉圓店,川業肉圓的歷史故事裡,有著在地人欣賞的拚搏和傳承,不只一代人對這家店有記憶,老顧客同時也見證了腳踏車攤變二輪推車,推車變成小攤,接著變成露店攤棚後搬進公有市場,最後自行租屋開張成為獨立店鋪的歷史。
+
+
+
+➤ 地址｜108台北市萬華區廣州街165號1樓
+➤ 營業時間｜週一至週日：10:00–21:00
+➤ 聯絡方式｜02-2308-1641`,
+                images: ["07-1.jpg", "07-2.jpg", "07-3.jpg"]
+            },
+            {
+                no: 8,
+                title: "兩喜號",
+                location: [25.03614, 121.49923],
+                description: `兩喜號第一代的陳兩喜先生在18歲時用扁擔挑著魷魚羹來賣,那時候龍山寺旁香客絡繹不絕。獨創的魷魚羹同時有兩種口味,稱之為「兩喜」,第一種是大塊過癮,爽脆大口的鮮魷魚條,另一種則是他每天親手捏的旗魚丸。湯頭甜美,旗魚丸大顆新鮮加上魷魚鮮美,這家小攤在第一代就已經奠定了口碑。
+
+第四代陳輿安接手後,建立SOP並且裝潢店面,更新菜單供國際客選擇,也同時與Uber Eats合作,開始分析每家店來客時間與比例,調整不同地區魷魚的處理方式。
+
+今天的兩喜號,依舊端出那一碗讓所有的遊客「兩喜」的魷魚羹,不只食物百年美味,四代老店更見證了艋舺人堅毅和拚搏的精神。
+
+
+
+➤ 地址｜108台北市萬華區西園路一段194號
+➤ 營業時間｜週一至週六：10:00–23:30
+➤ 聯絡方式｜02-2336-1129`,
+                images: ["08-1.jpg", "08-2.jpg", "08-3.jpg"]
+            },
+            {
+                no: 9,
+                title: "台北堂摩那卡本舖",
+                location: [25.03327, 121.50405],
+                description: `現在的摩那卡本舖位於艋舺大道上,第一代李德眉先生於1920進入源田株式會社習藝,他字跡端莊、手藝勤快且聰明從而被源田先生所器重,學習了各種和菓子的製作工法。
+
+往後源田先生甚至一度希望帶著這個年輕的台灣學徒一起回日本,繼續當他的好幫手,但李德眉先生沒有跟著源田先生去日本,表達想留在台灣,於是源田先生在離開台灣之際,將店鋪及所有的工具設備留給了李德眉,包括代表日本皇室的菊花摩那卡模具和貝殼模具。
+
+於是李德眉先生在長沙街掛起了「摩那卡本舖」的商號,對台灣人販售日本皇室點心,純手工製作的最中餅口味美味又新鮮,此時的摩那卡本舖甚至外銷琉球。
+
+
+
+➤ 地址｜108台北市萬華區艋舺大道52號
+➤ 營業時間｜週一至週六：09:00–18:00(星期日公休)
+➤ 聯絡方式｜02-2336-2024`,
+                images: ["09-1.jpg", "09-2.jpg"]
+            },
+            {
+                no: 10,
+                title: "富山蒸籠",
+                location: [25.0386, 121.49637],
+                description: `位於桂林路的富山蒸籠,是艋舺過去最大的蒸籠店。第二代的蕭生育今年已經93歲,可以說是國寶級的藝匠,他親眼見證台灣蒸籠和餐飲業的興衰變化。從小就跟著父親和丈人學做蒸籠,手藝奇佳,也因為這一家人的靈巧手藝能夠撐起一家百年蒸籠店。
+
+1945年時蕭生育來台後因兩岸關係無法回去。陰錯陽差之下,蕭生育與岳父一起騎著腳踏車沿公路叫賣蒸籠,專門四處兜售各種蒸籠木桶產品,此時稱為協和蒸籠。1949年搬入中華路店面時,請了算命師取「富貴如山」四字為富山商號店名,蒸籠品質良好又提供保固,加上當時人口增加,蒸籠供不應求,全家老小動員還是來不及應付訂單,蒸籠店在民國50年代時就開始因為廣東菜風行而供不應求。
+
+後因時代變化,純手工的蒸籠價值再度被看見,許多店家發現依舊是富山這樣好品質的手作蒸籠能夠用的比較久,親自前往上門選購,第四代的接班人也開始經營網路,老店透過新時代媒體,繼續服務著上門的來客。像是那些八方雲集營業用的鍋貼蒸蓋,最後依舊選擇富山蒸籠,很多人也或許不知道自己曾經被富山服務過。
+
+
+
+➤ 地址｜108台北市萬華區桂林路224巷1號
+➤ 營業時間｜週一至週六：09:00–19:00(星期日公休)
+➤ 聯絡方式｜02-2306-0066`,
+                images: ["10-1.jpg", "10-2.jpg", "10-3.jpg"]
+            },
+            {
+                no: 11,
+                title: "龍城號",
+                location: [25.03639, 121.50242],
+                description: `位於剝皮寮對面的龍城號有一個顯眼的黃色招牌,是萬華人眼中的雞湯名店,而在老萬華人記憶中,也曾經是紅色招牌的「進財麵店」。
+
+第一代麵店老闆洪大目出生於泉州,跟著走船來台後落腳於剝皮寮,1896年,第一代用肩膀挑著扁擔沿街賣麵謀生,一邊扛著鍋爐及高湯,自炸豬皮瀝油熬煮,加上手炒油蔥及高湯,成就這碗饕客喜愛的「膨皮」炸豬皮切仔麵。
+
+在生意穩定以後,洪大目娶郭氏為妻,正式在台灣落地生根,從扁擔到攤車都是同樣味道相傳,一直到父子在龍山寺旁搭設鐵皮屋,才有了自己的露店,並交由第二代進財接手,故此有了進財麵店之名。而龍山寺旁不遠處就是一排廣州街的跌打損傷行,當時稱為跌打損傷街,那裏有著康家的龍城號,專賣各式補湯。進財麵店後來與龍城號結為親家,因此有著這樣的店名。
+
+來到龍城號,可以看到台灣家族代代努力,一支扁擔起家,步步經營品項並發揚光大的故事。
+
+
+
+➤ 地址｜108台北市萬華區廣州街94號
+➤ 營業時間｜週二至週日：10:30–19:00、星期一公休
+➤ 聯絡方式｜02-2336-7668`,
+                images: ["11-1.jpg"]
+            },
+            {
+                no: 12,
+                title: "德安青草店",
+                location: [25.03693, 121.50034],
+                description: `德安青草店的歷史與艋舺密不可分,在先民墾荒時代,艋舺就有用草藥茶湯替人調養身體的記載,那時的醫療資源極為稀有珍貴,當人們有了傷寒病痛甚至各種疑難雜症,便到龍山寺求取藥籤,根據藥籤本上的紀錄,再抓取草葉治病。
+
+根據藥籤的內容採購青草調養補身或治療各種皮膚疾病,青草由於天然無副作用,價格又負擔的起,就此變成了救命的良方,也讓龍山寺旁的這些青草攤有了「救命巷」之稱。
+
+青草店及救命巷,逐漸被現代醫學與健保普及化替代,也因為宮廟停止提供藥籤,青草店紛紛走入歷史,傳統替人治病的青草店必須另求生路,運用專業知識繼續經營下去,第三代簡宜賢開始轉型,研發養生飲品包,推出青草藥膳食坊,並與其他店鋪合作,配送提供各種客製化茶飲,也供給當地餐廳做為料理。
+
+
+
+➤ 地址｜108台北市萬華區西昌街224巷11號
+➤ 營業時間｜週一至週六：09:00–18:00、週日10:30-18:00
+➤ 聯絡方式｜02-2308-5549`,
+                images: ["12-1.jpg", "12-2.jpg"]
+            },
+            {
+                no: 13,
+                title: "龍都冰菓室",
+                location: [25.03519, 121.49733],
+                description: `台灣俗諺中有一句說「第一賣冰,第二做醫生」,反映的是冰品的需求大,人人都需要吃冰,而在萬華吃冰,人們第一時間想到的便是龍都,這家冰店從挑扁擔沿街叫賣起家,經過三代人的努力,成為了艋舺人共同回憶,並且也見證了台灣冷鏈系統及冰品的進步歷史。
+
+1998年,龍都落腳於廣州街,並改名為「龍都冰菓專業家」,這樣的店名與堅持自己熬製糖膏及各式冰品佐料的精神相符,也因為冰品美味,佐料用心,而聞名於全台,龍都的招牌為八寶冰,裡面所用到的所有花生、紅豆、花豆、脆圓、湯圓、芋圓、綠豆、芋頭全是自己家廚房熬製,被稱為「龍都冰」,成為各大行腳節目的必經景點。
+
+在2020年,龍都開業百年之際搬遷到和平西路上,第四代正在操作著刨冰機,父親開始用計時器計算出不同的材料該熬煮的時間,一家人捧著招牌的冰品,淋上祖傳熬製而成的糖漿,將美味冰品傳承下去。
+
+
+
+➤ 地址｜108台北市萬華區和平西路三段192號
+➤ 營業時間｜週四至週二：11:30–22:00、周一公休
+➤ 聯絡方式｜02-2308-2227`,
+                images: ["13-1.jpg", "13-2.jpg", "13-3.jpg"]
             }
         ];
-
-        // Global Variables
+        
+        // Global variables
         let map;
         let currentPoint = null;
         let currentImageIndex = 0;
         let currentAudio = null;
-        let currentAudioUrl = null;
-        let audioUnlocked = false;
         let isPlaying = false;
         let galleryInterval = null;
-
-        // Initialize Map
+        
+        // Initialize map
         function initMap() {
-            map = L.map('map').setView([25.0375, 121.5004], 16);
-
+            map = L.map('map').setView([25.0378, 121.5012], 15);
+            
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap contributors'
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 19
             }).addTo(map);
-
+            
             // Add markers
             points.forEach(point => {
-                const marker = L.marker([point.lat, point.lng], {
+                const marker = L.marker(point.location, {
                     icon: L.divIcon({
                         className: 'custom-marker',
-                        iconSize: [20, 20]
+                        iconSize: [36, 36],
+                        iconAnchor: [18, 36]
                     })
                 }).addTo(map);
-
-                marker.on('click', () => showDetail(point));
+                
+                // Create popup with image and button
+                const firstImage = point.images[0];
+                const popupContent = `
+                    <div class="popup-card">
+                        <img src="https://raw.githubusercontent.com/ougaga26-lab/tourmaptest/main/images/${firstImage}" 
+                             alt="${point.title}" 
+                             class="popup-image"
+                             onerror="this.style.display='none'">
+                        <div class="popup-content">
+                            <span class="popup-number">NO. ${String(point.no).padStart(2, '0')}</span>
+                            <div class="popup-title">${point.title}</div>
+                            <a href="#" class="popup-button" data-index="${point.no - 1}">查看詳情</a>
+                        </div>
+                    </div>
+                `;
+                
+                marker.bindPopup(popupContent, {
+                    maxWidth: 250,
+                    minWidth: 220,
+                    closeButton: true
+                });
+                
+                marker.on('popupopen', () => {
+                    setTimeout(() => {
+                        const button = document.querySelector(`[data-index="${point.no - 1}"]`);
+                        if (button) {
+                            button.addEventListener('click', (e) => {
+                                e.preventDefault();
+                                showDetail(point.no - 1);
+                            });
+                        }
+                    }, 100);
+                });
             });
         }
-
-        // Show Detail Panel
-        function showDetail(point) {
-            currentPoint = point;
+        
+        // Show detail page
+        function showDetail(index) {
+            currentPoint = points[index];
             currentImageIndex = 0;
-
-            document.getElementById('detail-title').textContent = point.name;
-            document.getElementById('detail-location').textContent = point.location;
-            document.getElementById('detail-description').textContent = point.description;
-
-            updateGallery();
-            startGalleryAutoPlay();
-
-            document.getElementById('detail-panel').classList.add('active');
-        }
-
-        // Close Detail Panel
-        function closeDetailPanel() {
-            document.getElementById('detail-panel').classList.remove('active');
-            stopGalleryAutoPlay();
-
-            // Stop audio if playing
-            if (currentAudio) {
-                currentAudio.pause();
-                currentAudio.currentTime = 0;
-                currentAudio.src = '';
-            }
-            if (currentAudioUrl) { URL.revokeObjectURL(currentAudioUrl); currentAudioUrl = null; }
-
-            isPlaying = false;
-            const button = document.getElementById('audio-button');
-            const text = document.getElementById('audio-text');
-            button.classList.remove('playing');
-            text.textContent = '朗讀介紹';
-        }
-
-        // Gallery Functions
-        function updateGallery() {
-            if (!currentPoint) return;
-
-            const image = document.getElementById('gallery-image');
-            image.src = currentPoint.images[currentImageIndex];
-
-            // Update indicators
-            const indicators = document.getElementById('gallery-indicators');
-            indicators.innerHTML = '';
             
-            currentPoint.images.forEach((_, index) => {
-                const indicator = document.createElement('div');
-                indicator.className = `indicator ${index === currentImageIndex ? 'active' : ''}`;
-                indicator.onclick = () => {
-                    currentImageIndex = index;
-                    updateGallery();
-                    resetGalleryAutoPlay();
-                };
-                indicators.appendChild(indicator);
+            // Stop any playing audio
+            if (isPlaying) {
+                toggleAudio();
+            }
+            
+            // Add class to body to hide header
+            document.body.classList.add('detail-active');
+            
+            // Update content
+            document.getElementById('detail-number').textContent = `NO. ${String(currentPoint.no).padStart(2, '0')}`;
+            document.getElementById('detail-title').textContent = currentPoint.title;
+            document.getElementById('detail-description').textContent = currentPoint.description;
+            
+            // Build image gallery
+            const galleryTrack = document.getElementById('gallery-track');
+            const galleryControls = document.getElementById('gallery-controls');
+            galleryTrack.innerHTML = '';
+            galleryControls.innerHTML = '';
+            
+            currentPoint.images.forEach((img, i) => {
+                const slide = document.createElement('div');
+                slide.className = 'gallery-slide';
+                slide.innerHTML = `<img src="https://raw.githubusercontent.com/ougaga26-lab/tourmaptest/main/images/${img}" alt="${currentPoint.title} ${i + 1}" onerror="this.src='https://via.placeholder.com/800x400/1a1816/c9a961?text=${encodeURIComponent(currentPoint.title)}'">`;
+                galleryTrack.appendChild(slide);
+                
+                const dot = document.createElement('div');
+                dot.className = `gallery-dot ${i === 0 ? 'active' : ''}`;
+                dot.onclick = () => goToImage(i);
+                galleryControls.appendChild(dot);
+            });
+            
+            // Show detail view
+            document.getElementById('detail-view').classList.add('active');
+            document.body.style.overflow = 'hidden';
+            
+            // Start auto-play gallery (5 seconds)
+            startGalleryAutoPlay();
+        }
+        
+        // Close detail page
+        function closeDetail() {
+            // Stop any playing audio
+            if (isPlaying) {
+                toggleAudio();
+            }
+            
+            // Stop gallery auto-play
+            stopGalleryAutoPlay();
+            
+            // Remove class from body to show header
+            document.body.classList.remove('detail-active');
+            
+            document.getElementById('detail-view').classList.remove('active');
+            document.body.style.overflow = 'auto';
+            currentPoint = null;
+        }
+        
+        // Image gallery navigation
+        function goToImage(index) {
+            currentImageIndex = index;
+            const track = document.getElementById('gallery-track');
+            track.style.transform = `translateX(-${index * 100}%)`;
+            
+            const dots = document.querySelectorAll('.gallery-dot');
+            dots.forEach((dot, i) => {
+                dot.classList.toggle('active', i === index);
             });
         }
-
+        
         function prevImage() {
-            if (!currentPoint) return;
-            currentImageIndex = (currentImageIndex - 1 + currentPoint.images.length) % currentPoint.images.length;
-            updateGallery();
+            const newIndex = currentImageIndex > 0 ? currentImageIndex - 1 : currentPoint.images.length - 1;
+            goToImage(newIndex);
             resetGalleryAutoPlay();
         }
-
+        
         function nextImage() {
-            if (!currentPoint) return;
-            currentImageIndex = (currentImageIndex + 1) % currentPoint.images.length;
-            updateGallery();
-            resetGalleryAutoPlay();
+            const newIndex = currentImageIndex < currentPoint.images.length - 1 ? currentImageIndex + 1 : 0;
+            goToImage(newIndex);
         }
-
+        
+        // Gallery auto-play functions
         function startGalleryAutoPlay() {
             stopGalleryAutoPlay();
-            galleryInterval = setInterval(() => {
-                nextImage();
-            }, 4000);
+            if (currentPoint && currentPoint.images.length > 1) {
+                galleryInterval = setInterval(() => {
+                    nextImage();
+                }, 5000); // 5 seconds
+            }
         }
-
+        
         function stopGalleryAutoPlay() {
             if (galleryInterval) {
                 clearInterval(galleryInterval);
                 galleryInterval = null;
             }
         }
-
+        
         function resetGalleryAutoPlay() {
             startGalleryAutoPlay();
         }
-
-        // ✅ 解鎖手機（尤其 iOS）音訊播放權限
-        async function unlockAudioOnce() {
-            if (audioUnlocked) return;
-            const audioEl = document.getElementById('ttsAudio');
-            if (!audioEl) return;
-
-            // A very short silent WAV to "unlock" audio playback on mobile browsers (especially iOS).
-            const silentWav = "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=";
-
-            audioEl.src = silentWav;
-            audioEl.muted = true;
-
-            try {
-                await audioEl.play();
-                audioEl.pause();
-                audioEl.currentTime = 0;
-                audioEl.muted = false;
-                audioUnlocked = true;
-            } catch (e) {
-                console.warn('Audio unlock failed:', e);
-            }
-        }
-
-        // Audio Toggle Function
+        
+        // Audio playback with VoAI API
         async function toggleAudio() {
-            if (!currentPoint) {
-                alert('請先選擇一個景點');
-                return;
-            }
-
             const button = document.getElementById('audio-button');
             const text = document.getElementById('audio-text');
-
+            
             if (isPlaying) {
-                // Stop audio
+                // Stop playing
                 if (currentAudio) {
                     currentAudio.pause();
-                    currentAudio.currentTime = 0;
-                    currentAudio.src = '';
+                    currentAudio = null;
                 }
-                if (currentAudioUrl) { URL.revokeObjectURL(currentAudioUrl); currentAudioUrl = null; }
-
                 isPlaying = false;
                 button.classList.remove('playing');
                 text.textContent = '朗讀介紹';
             } else {
-                // Generate and play audio
+                // Start playing
                 try {
-                    // Show loading state
                     button.disabled = true;
-                    text.textContent = '生成中...';
-
-                    // ✅ Unlock audio playback on mobile (iOS/Android)
-                    await unlockAudioOnce();
-
-                    // Call backend API (Vercel function)
-                    const response = await fetch('/api/tts', {
+                    text.textContent = '載入中...';
+                    
+                    // Call Backend API
+                    const response = await fetch(BACKEND_API_URL, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
@@ -595,72 +1086,67 @@
                             breath_pause: 0.3
                         })
                     });
-
+                    
                     if (!response.ok) {
                         throw new Error('API request failed');
                     }
-
+                    
                     // Get audio blob
                     const audioBlob = await response.blob();
                     const audioUrl = URL.createObjectURL(audioBlob);
-
-                    // Use a single <audio> element for better mobile compatibility
-                    currentAudio = document.getElementById('ttsAudio');
-                    currentAudio.src = audioUrl;
-                    currentAudioUrl = audioUrl;
-
+                    
+                    // Create and play audio
+                    currentAudio = new Audio(audioUrl);
+                    
                     currentAudio.onended = () => {
                         isPlaying = false;
                         button.classList.remove('playing');
                         button.disabled = false;
                         text.textContent = '朗讀介紹';
-                        if (currentAudioUrl) { URL.revokeObjectURL(currentAudioUrl); currentAudioUrl = null; }
+                        URL.revokeObjectURL(audioUrl);
                     };
-
+                    
                     currentAudio.onerror = () => {
                         isPlaying = false;
                         button.classList.remove('playing');
                         button.disabled = false;
                         text.textContent = '朗讀介紹';
                         alert('播放失敗，請稍後再試');
-                        if (currentAudioUrl) { URL.revokeObjectURL(currentAudioUrl); currentAudioUrl = null; }
+                        URL.revokeObjectURL(audioUrl);
                     };
-
+                    
                     await currentAudio.play();
                     isPlaying = true;
                     button.classList.add('playing');
                     button.disabled = false;
                     text.textContent = '停止播放';
-
+                    
                 } catch (error) {
                     console.error('VoAI API Error:', error);
                     button.disabled = false;
                     text.textContent = '朗讀介紹';
-
+                    
                     // 更友善的錯誤訊息
-                    if (String(error?.message || '').includes('CORS') || String(error?.message || '').includes('Failed to fetch')) {
+                    if (error.message.includes('CORS') || error.message.includes('Failed to fetch')) {
                         alert('語音功能目前無法使用\n\n原因：瀏覽器安全限制阻止了 API 呼叫\n\n解決方案：\n1. 使用本地端開啟網頁測試\n2. 或部署後端代理伺服器');
                     } else {
-                        alert('語音生成/播放失敗：' + (error?.message || error));
+                        alert('語音生成失敗：' + error.message);
                     }
                 }
             }
         }
-
+        
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
             initMap();
-            currentAudio = document.getElementById('ttsAudio');
         });
-
+        
         // Stop audio when leaving page
         window.addEventListener('beforeunload', () => {
             if (currentAudio) {
                 currentAudio.pause();
-                currentAudio.currentTime = 0;
-                currentAudio.src = '';
+                currentAudio = null;
             }
-            if (currentAudioUrl) { URL.revokeObjectURL(currentAudioUrl); currentAudioUrl = null; }
             stopGalleryAutoPlay();
         });
     </script>
