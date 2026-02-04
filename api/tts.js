@@ -23,7 +23,19 @@ export default async function handler(req, res) {
             return res.status(400).json({ error: '缺少文字內容' });
         }
 
-        // 呼叫 VoAI API
+        // 呼叫 VoAI API（簡化版）
+        const voaiPayload = {
+            version: 'Neo',
+            text: text,
+            speaker: '佑希',
+            style: '預設',
+            speed: 1,
+            pitch_shift: 0,
+            breath_pause: 0
+        };
+        
+        console.log('Calling VoAI API with:', voaiPayload);
+        
         const response = await fetch('https://connect.voai.ai/TTS/Speech', {
             method: 'POST',
             headers: {
@@ -31,22 +43,13 @@ export default async function handler(req, res) {
                 'x-api-key': process.env.VOAI_API_KEY,
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({
-                version: version || 'Neo',
-                text: text,
-                speaker: speaker || '佑希',
-                style: style || '預設',
-                speed: speed || 1,
-                pitch_shift: pitch_shift || 0,
-                style_weight: style_weight || 0,
-                breath_pause: breath_pause || 0.3
-            })
+            body: JSON.stringify(voaiPayload)
         });
 
         if (!response.ok) {
             const errorText = await response.text();
             console.error('VoAI API Error:', response.status, errorText);
-            throw new Error(`VoAI API 錯誤: ${response.status}`);
+            throw new Error(`VoAI API 錯誤 ${response.status}: ${errorText}`);
         }
 
         // 取得音訊資料
