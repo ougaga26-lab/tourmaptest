@@ -11,21 +11,42 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:wght@400;600;700&family=Noto+Serif+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
     
     <style>
         :root {
-            --color-bg: #0a0a0a;
-            --color-surface: #1a1816;
-            --color-surface-elevated: #262320;
-            --color-primary: #d4af37;
-            --color-primary-light: #f0d98e;
-            --color-primary-dark: #b8941f;
-            --color-text: #e8e6e3;
-            --color-text-secondary: #a8a5a0;
-            --color-text-muted: #6b6860;
-            --color-border: #332f2a;
-            --color-accent: #c9a961;
+            /* Primary Colors - Based on Design System */
+            --primary-60: #c9a961;
+            --primary-50: #d4b574;
+            --primary-40: #ddc188;
+            
+            /* Secondary Colors */
+            --secondary-60: #8a8377;
+            --secondary-50: #9d9689;
+            --secondary-40: #b0a99c;
+            
+            /* Tertiary Colors */
+            --tertiary-60: #747474;
+            --tertiary-50: #8b8b8b;
+            
+            /* Background Colors */
+            --bg-primary: #0a0908;
+            --bg-secondary: #1a1816;
+            --bg-tertiary: #262320;
+            
+            /* Surface Colors */
+            --surface-dim: #0a0908;
+            --surface: #1a1816;
+            --surface-bright: #262320;
+            
+            /* Text Colors */
+            --text-primary: #e8e6e3;
+            --text-secondary: #a8a5a0;
+            --text-tertiary: #6b6860;
+            
+            /* Border Colors */
+            --border-primary: #332f2a;
+            --border-secondary: #262320;
         }
         
         * {
@@ -36,8 +57,8 @@
         
         body {
             font-family: 'Noto Serif TC', serif;
-            background: var(--color-bg);
-            color: var(--color-text);
+            background: var(--bg-primary);
+            color: var(--text-primary);
             line-height: 1.7;
             overflow-x: hidden;
         }
@@ -49,10 +70,10 @@
             left: 0;
             right: 0;
             z-index: 1000;
-            background: linear-gradient(180deg, rgba(10,10,10,0.98) 0%, rgba(10,10,10,0.9) 100%);
+            background: linear-gradient(180deg, rgba(10,9,8,0.98) 0%, rgba(10,9,8,0.9) 100%);
             backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--color-border);
-            padding: 1.2rem 1.5rem;
+            border-bottom: 1px solid var(--border-primary);
+            padding: 1.5rem;
             animation: slideDown 0.6s cubic-bezier(0.16, 1, 0.3, 1);
         }
         
@@ -70,25 +91,23 @@
         .header-content {
             max-width: 1200px;
             margin: 0 auto;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+            text-align: center;
         }
         
         h1 {
             font-family: 'Noto Serif TC', serif;
-            font-size: 1.5rem;
+            font-size: 1.8rem;
             font-weight: 900;
-            color: var(--color-primary);
-            letter-spacing: 0.05em;
+            color: var(--primary-60);
+            letter-spacing: 0.1em;
+            margin-bottom: 0.3rem;
         }
         
         .subtitle {
-            font-size: 0.85rem;
-            color: var(--color-text-secondary);
+            font-size: 0.9rem;
+            color: var(--text-secondary);
             font-weight: 400;
-            margin-top: 0.2rem;
-            letter-spacing: 0.15em;
+            letter-spacing: 0.2em;
         }
         
         /* Map View */
@@ -108,20 +127,20 @@
         
         /* Custom Leaflet Marker */
         .custom-marker {
-            background: var(--color-primary);
-            width: 32px;
-            height: 32px;
+            background: var(--primary-60);
+            width: 36px;
+            height: 36px;
             border-radius: 50% 50% 50% 0;
             transform: rotate(-45deg);
-            border: 3px solid rgba(10,10,10,0.9);
-            box-shadow: 0 4px 12px rgba(212,175,55,0.4);
+            border: 3px solid var(--bg-primary);
+            box-shadow: 0 4px 16px rgba(201,169,97,0.5);
             cursor: pointer;
             transition: all 0.3s ease;
         }
         
         .custom-marker:hover {
-            transform: rotate(-45deg) scale(1.15);
-            box-shadow: 0 6px 20px rgba(212,175,55,0.6);
+            transform: rotate(-45deg) scale(1.2);
+            box-shadow: 0 6px 24px rgba(201,169,97,0.7);
         }
         
         .custom-marker::after {
@@ -130,10 +149,93 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%) rotate(45deg);
-            width: 8px;
-            height: 8px;
-            background: var(--color-bg);
+            width: 10px;
+            height: 10px;
+            background: var(--bg-primary);
             border-radius: 50%;
+        }
+        
+        /* Leaflet Popup Styling */
+        .leaflet-popup-content-wrapper {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-primary);
+            border-radius: 12px;
+            box-shadow: 0 12px 32px rgba(0,0,0,0.5);
+            padding: 0;
+            overflow: hidden;
+            min-width: 280px;
+            max-width: 320px;
+        }
+        
+        .leaflet-popup-content {
+            margin: 0;
+            font-family: 'Noto Serif TC', serif;
+        }
+        
+        .leaflet-popup-tip {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-primary);
+        }
+        
+        .popup-card {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .popup-image {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            display: block;
+            background: var(--surface);
+        }
+        
+        .popup-content {
+            padding: 1.2rem;
+        }
+        
+        .popup-number {
+            display: inline-block;
+            font-size: 0.75rem;
+            color: var(--primary-60);
+            border: 1px solid var(--primary-60);
+            padding: 0.3rem 0.8rem;
+            border-radius: 12px;
+            margin-bottom: 0.8rem;
+            letter-spacing: 0.1em;
+        }
+        
+        .popup-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary-60);
+            margin-bottom: 1rem;
+            line-height: 1.4;
+        }
+        
+        .popup-button {
+            display: block;
+            width: 100%;
+            background: var(--primary-60);
+            color: var(--bg-primary);
+            text-align: center;
+            padding: 0.9rem 1.5rem;
+            text-decoration: none;
+            font-size: 1rem;
+            font-weight: 700;
+            border: 1px solid var(--primary-60);
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            letter-spacing: 0.05em;
+        }
+        
+        .popup-button:hover {
+            background: var(--primary-50);
+            border-color: var(--primary-50);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(201,169,97,0.3);
         }
         
         /* Detail View */
@@ -143,15 +245,15 @@
             left: 0;
             width: 100%;
             height: 100vh;
-            background: var(--color-bg);
+            background: var(--bg-primary);
             z-index: 100;
             display: none;
-            overflow-y: auto;
             animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
         }
         
         #detail-view.active {
-            display: block;
+            display: flex;
+            flex-direction: column;
         }
         
         @keyframes slideUp {
@@ -170,8 +272,8 @@
             z-index: 101;
             width: 48px;
             height: 48px;
-            background: var(--color-surface-elevated);
-            border: 1px solid var(--color-border);
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-primary);
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -182,34 +284,39 @@
         }
         
         .back-button:hover {
-            background: var(--color-primary);
-            border-color: var(--color-primary);
+            background: var(--primary-60);
+            border-color: var(--primary-60);
             transform: scale(1.05);
         }
         
         .back-button svg {
             width: 24px;
             height: 24px;
-            stroke: var(--color-text);
+            stroke: var(--text-primary);
             transition: stroke 0.3s ease;
         }
         
         .back-button:hover svg {
-            stroke: var(--color-bg);
+            stroke: var(--bg-primary);
+        }
+        
+        .detail-scroll-area {
+            flex: 1;
+            overflow-y: auto;
+            padding-bottom: 100px;
         }
         
         .detail-content {
             max-width: 900px;
             margin: 0 auto;
-            padding: 6rem 1.5rem 4rem;
+            padding: 6rem 1.5rem 2rem;
         }
         
         .detail-number {
             display: inline-block;
-            font-family: 'Crimson Text', serif;
             font-size: 0.9rem;
-            color: var(--color-primary);
-            border: 1px solid var(--color-primary);
+            color: var(--primary-60);
+            border: 1px solid var(--primary-60);
             padding: 0.4rem 1rem;
             border-radius: 20px;
             margin-bottom: 1.5rem;
@@ -231,9 +338,10 @@
         .detail-title {
             font-size: 2.5rem;
             font-weight: 900;
-            color: var(--color-primary-light);
+            color: var(--primary-60);
             margin-bottom: 2rem;
             line-height: 1.3;
+            text-align: center;
             animation: fadeIn 0.6s ease 0.3s both;
         }
         
@@ -244,8 +352,8 @@
             height: 400px;
             margin-bottom: 3rem;
             overflow: hidden;
-            border-radius: 8px;
-            border: 1px solid var(--color-border);
+            border-radius: 12px;
+            border: 1px solid var(--border-primary);
             animation: fadeIn 0.6s ease 0.4s both;
         }
         
@@ -259,7 +367,7 @@
             min-width: 100%;
             height: 100%;
             position: relative;
-            background: var(--color-surface);
+            background: var(--surface);
         }
         
         .gallery-slide img {
@@ -290,8 +398,8 @@
         }
         
         .gallery-dot.active {
-            background: var(--color-primary);
-            border-color: var(--color-primary);
+            background: var(--primary-60);
+            border-color: var(--primary-60);
             transform: scale(1.3);
         }
         
@@ -301,9 +409,9 @@
             transform: translateY(-50%);
             width: 40px;
             height: 40px;
-            background: rgba(10,10,10,0.7);
+            background: rgba(10,9,8,0.8);
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(232,230,227,0.2);
+            border: 1px solid var(--border-primary);
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -314,8 +422,8 @@
         }
         
         .gallery-nav:hover {
-            background: var(--color-primary);
-            border-color: var(--color-primary);
+            background: var(--primary-60);
+            border-color: var(--primary-60);
         }
         
         .gallery-nav.prev {
@@ -329,45 +437,61 @@
         .gallery-nav svg {
             width: 20px;
             height: 20px;
-            stroke: var(--color-text);
+            stroke: var(--text-primary);
         }
         
         .gallery-nav:hover svg {
-            stroke: var(--color-bg);
+            stroke: var(--bg-primary);
         }
         
         /* Description */
         .detail-description {
             font-size: 1.1rem;
             line-height: 2;
-            color: var(--color-text);
-            margin-bottom: 3rem;
+            color: var(--text-primary);
             white-space: pre-line;
             animation: fadeIn 0.6s ease 0.5s both;
         }
         
-        /* Audio Button */
+        /* Fixed Audio Button */
+        .audio-button-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 102;
+            background: linear-gradient(0deg, var(--bg-primary) 70%, transparent 100%);
+            padding: 1.5rem 1.5rem 2rem;
+            pointer-events: none;
+        }
+        
         .audio-button {
-            display: inline-flex;
+            display: flex;
             align-items: center;
+            justify-content: center;
             gap: 0.8rem;
-            background: linear-gradient(135deg, var(--color-primary-dark) 0%, var(--color-primary) 100%);
-            color: var(--color-bg);
-            border: none;
-            padding: 1rem 2rem;
-            border-radius: 50px;
+            background: var(--primary-60);
+            color: var(--bg-primary);
+            border: 1px solid var(--primary-60);
+            padding: 1.1rem 2rem;
+            border-radius: 12px;
             font-family: 'Noto Serif TC', serif;
             font-size: 1.1rem;
             font-weight: 700;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 16px rgba(212,175,55,0.3);
-            animation: fadeIn 0.6s ease 0.6s both;
+            box-shadow: 0 6px 20px rgba(201,169,97,0.4);
+            max-width: 900px;
+            margin: 0 auto;
+            width: 100%;
+            pointer-events: auto;
         }
         
         .audio-button:hover {
+            background: var(--primary-50);
+            border-color: var(--primary-50);
             transform: translateY(-2px);
-            box-shadow: 0 6px 24px rgba(212,175,55,0.5);
+            box-shadow: 0 8px 28px rgba(201,169,97,0.5);
         }
         
         .audio-button:active {
@@ -375,51 +499,14 @@
         }
         
         .audio-button.playing {
-            background: linear-gradient(135deg, #8b7a3e 0%, #6b5d2f 100%);
+            background: var(--secondary-60);
+            border-color: var(--secondary-60);
         }
         
         .audio-icon {
             width: 24px;
             height: 24px;
-            fill: var(--color-bg);
-        }
-        
-        /* Info Section */
-        .info-section {
-            background: var(--color-surface);
-            border: 1px solid var(--color-border);
-            border-radius: 8px;
-            padding: 2rem;
-            margin-top: 3rem;
-            animation: fadeIn 0.6s ease 0.7s both;
-        }
-        
-        .info-item {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-            padding-bottom: 1.5rem;
-            border-bottom: 1px solid var(--color-border);
-        }
-        
-        .info-item:last-child {
-            margin-bottom: 0;
-            padding-bottom: 0;
-            border-bottom: none;
-        }
-        
-        .info-label {
-            font-size: 0.95rem;
-            color: var(--color-primary);
-            font-weight: 700;
-            min-width: 80px;
-            flex-shrink: 0;
-        }
-        
-        .info-value {
-            font-size: 0.95rem;
-            color: var(--color-text-secondary);
-            line-height: 1.8;
+            fill: var(--bg-primary);
         }
         
         /* Responsive */
@@ -429,15 +516,15 @@
             }
             
             h1 {
-                font-size: 1.2rem;
+                font-size: 1.4rem;
             }
             
             .subtitle {
-                font-size: 0.75rem;
+                font-size: 0.8rem;
             }
             
             .detail-content {
-                padding: 5rem 1.2rem 3rem;
+                padding: 5rem 1.2rem 2rem;
             }
             
             .detail-title {
@@ -452,77 +539,41 @@
                 font-size: 1rem;
             }
             
-            .audio-button {
-                width: 100%;
-                justify-content: center;
+            .audio-button-container {
+                padding: 1rem 1rem 1.5rem;
             }
             
-            .info-section {
-                padding: 1.5rem;
+            .audio-button {
+                padding: 1rem 1.5rem;
+                font-size: 1rem;
+            }
+            
+            .leaflet-popup-content-wrapper {
+                min-width: 260px;
+                max-width: 280px;
+            }
+            
+            .popup-image {
+                height: 160px;
             }
         }
         
-        /* Leaflet Popup Styling */
-        .leaflet-popup-content-wrapper {
-            background: var(--color-surface-elevated);
-            color: var(--color-text);
-            border: 1px solid var(--color-border);
-            border-radius: 8px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+        /* Scrollbar Styling */
+        .detail-scroll-area::-webkit-scrollbar {
+            width: 8px;
         }
         
-        .leaflet-popup-content {
-            margin: 1rem;
-            font-family: 'Noto Serif TC', serif;
+        .detail-scroll-area::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
         }
         
-        .leaflet-popup-tip {
-            background: var(--color-surface-elevated);
-            border: 1px solid var(--color-border);
+        .detail-scroll-area::-webkit-scrollbar-thumb {
+            background: var(--secondary-60);
+            border-radius: 4px;
         }
         
-        .popup-title {
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: var(--color-primary);
-            margin-bottom: 0.5rem;
-        }
-        
-        .popup-link {
-            display: inline-block;
-            margin-top: 0.5rem;
-            color: var(--color-primary-light);
-            text-decoration: none;
-            font-size: 0.9rem;
-            transition: color 0.3s ease;
-        }
-        
-        .popup-link:hover {
-            color: var(--color-primary);
-        }
-        
-        /* Loading */
-        .loading {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 1000;
-        }
-        
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border: 3px solid var(--color-border);
-            border-top-color: var(--color-primary);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
+        .detail-scroll-area::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-60);
         }
     </style>
 </head>
@@ -530,10 +581,8 @@
     <!-- Header -->
     <header>
         <div class="header-content">
-            <div>
-                <h1>萬華艋舺</h1>
-                <div class="subtitle">歷史街區導覽</div>
-            </div>
+            <h1>萬華艋舺</h1>
+            <div class="subtitle">歷史街區導覽</div>
         </div>
     </header>
     
@@ -551,36 +600,38 @@
             </svg>
         </div>
         
-        <div class="detail-content">
-            <span class="detail-number" id="detail-number"></span>
-            <h2 class="detail-title" id="detail-title"></h2>
-            
-            <div class="image-gallery" id="image-gallery">
-                <div class="gallery-track" id="gallery-track"></div>
-                <div class="gallery-nav prev" onclick="prevImage()">
-                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="15 18 9 12 15 6"></polyline>
-                    </svg>
+        <div class="detail-scroll-area">
+            <div class="detail-content">
+                <span class="detail-number" id="detail-number"></span>
+                <h2 class="detail-title" id="detail-title"></h2>
+                
+                <div class="image-gallery" id="image-gallery">
+                    <div class="gallery-track" id="gallery-track"></div>
+                    <div class="gallery-nav prev" onclick="prevImage()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                        </svg>
+                    </div>
+                    <div class="gallery-nav next" onclick="nextImage()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </div>
+                    <div class="gallery-controls" id="gallery-controls"></div>
                 </div>
-                <div class="gallery-nav next" onclick="nextImage()">
-                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="9 18 15 12 9 6"></polyline>
-                    </svg>
-                </div>
-                <div class="gallery-controls" id="gallery-controls"></div>
+                
+                <div class="detail-description" id="detail-description"></div>
             </div>
-            
-            <div class="detail-description" id="detail-description"></div>
-            
+        </div>
+        
+        <div class="audio-button-container">
             <button class="audio-button" id="audio-button" onclick="toggleAudio()">
                 <svg class="audio-icon" viewBox="0 0 24 24">
                     <path d="M11 5L6 9H2v6h4l5 4V5z"/>
                     <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
                 </svg>
-                <span id="audio-text">播放語音導覽</span>
+                <span id="audio-text">朗讀介紹</span>
             </button>
-            
-            <div class="info-section" id="info-section"></div>
         </div>
     </div>
     
@@ -598,11 +649,14 @@
 
 日本帝國統治時,剝皮寮街區經過市區改正計畫而開闢道路,原本的剝皮寮古道反倒成了較小的巷弄,新闢的康定路、廣州街和昆明街區出現了大量當時流行的日式風格建物,立面整齊劃一,騎樓寬敞舒適並且用洗石子和國防色磚來進行裝修,牌樓厝也加上泥塑裝飾,用以辨識姓氏或家族職業,這裡保存下了當時日本總督府形式的辰野式風格建築和泥塑花台。
 
-在經過文史勘查後,此地的歷史風貌特色及文化價值應該予以存續,不該被拆除,成為老松國小的校地。經過再多方交涉下剝皮寮被登錄為歷史建築群得以保存下來不做開發,日後將以歷史街區的方式經營下去。`,
-                images: ["01-1.jpg", "01-2.jpg", "01-3.jpg"],
-                address: "台北市萬華區康定路173巷",
-                hours: "週二至周日：09:00–18:00、周一公休",
-                contact: "02-2302-3199"
+在經過文史勘查後,此地的歷史風貌特色及文化價值應該予以存續,不該被拆除,成為老松國小的校地。經過再多方交涉下剝皮寮被登錄為歷史建築群得以保存下來不做開發,日後將以歷史街區的方式經營下去。
+
+
+
+➤ 地址｜台北市萬華區康定路173巷
+➤ 營業時間｜週二至周日：09:00–18:00、周一公休
+➤ 聯絡方式｜02-2302-3199`,
+                images: ["01-1.jpg", "01-2.jpg", "01-3.jpg"]
             },
             {
                 no: 2,
@@ -610,11 +664,14 @@
                 location: [25.04006, 121.50025],
                 description: `福大同茶莊的歷史不只可在茶葉包裝的商號印章中看到,在貴陽街上已經營六代的這個茶莊,店裡最早的印章是在道光25年刻下的,現已成為鎮店之寶。這裡的第一代茶人從安溪移民來到台灣,帶來知名的鐵觀音,那時候原先為官醫的蔡漢,以茶湯為當時的艋舺碼頭工人調理身體,自此開設茶行,取名為「福大同」,成為在艋舺落地生根的第一代。因醫藥衛生條件不佳,能有學醫的人前來幫助調理身體給予諮詢,對於當地人來說極為重要,也將帶來的鐵觀音奉為上品。
 
-五代根基所留下來的茶藝知識,加上在地經營已久的地方信任關係,使得六代茶行能夠屹立不搖,穩穩地在萬華深耕經營,能從福大同的店家故事裡,看見每一代人的努力拚搏,不斷的轉型提升,將茶人文化永續傳承。`,
-                images: ["02-1.jpg", "02-2.jpg", "02-3.jpg"],
-                address: "108台北市萬華區貴陽街二段196號",
-                hours: "週一至週六：10:00–19:00、週日：11:00–18:30",
-                contact: "02-23756527"
+五代根基所留下來的茶藝知識,加上在地經營已久的地方信任關係,使得六代茶行能夠屹立不搖,穩穩地在萬華深耕經營,能從福大同的店家故事裡,看見每一代人的努力拚搏,不斷的轉型提升,將茶人文化永續傳承。
+
+
+
+➤ 地址｜108台北市萬華區貴陽街二段196號
+➤ 營業時間｜週一至週六：10:00–19:00、週日：11:00–18:30
+➤ 聯絡方式｜02-23756527`,
+                images: ["02-1.jpg", "02-2.jpg", "02-3.jpg"]
             },
             {
                 no: 3,
@@ -624,11 +681,17 @@
 
 艋舺教會於1906年聘僱陳清義牧師,並且從中會獨立出來,開始興旺如同馬偕牧師所願,逐漸擴大,並且隨著會眾人數而重建,艋舺教會內共有五寶,分別為馬偕牧師所帶來的百年名琴、友會致贈的「宇宙主宰」,1884年時遠從加拿大來台的福音鐘、艋舺當地鄉紳贈與的「耶穌聖教」石碑及大管風琴。
 
-現今艋舺教會擁有青少年團契,90年歷史的愛心幼稚園,專門為長老服務的松年大學,無論經歷什麼,艋舺教會都能一代一代的傳承下去。`,
-                images: ["03-1.jpg", "03-2.jpg", "03-3.jpg", "03-4.jpg"],
-                address: "108台北市萬華區貴陽街二段94號",
-                hours: "主日禮拜時間：第一場 08:00～09:00 (台語)、第二場 10:00～11:30 (台語/直播)、第三場 11:30～12:30 (華語/直播)",
-                contact: "02-2361-9352"
+現今艋舺教會擁有青少年團契,90年歷史的愛心幼稚園,專門為長老服務的松年大學,無論經歷什麼,艋舺教會都能一代一代的傳承下去。
+
+
+
+➤ 地址｜108台北市萬華區貴陽街二段94號
+➤ 聯絡方式｜02-2361-9352
+➤ 主日禮拜時間｜
+第一場：08：00～09：00 (台語)
+第二場：10：00～11：30 (台語/直播)
+第三場：11：30～12：30 (華語/直播)`,
+                images: ["03-1.jpg", "03-2.jpg", "03-3.jpg", "03-4.jpg"]
             },
             {
                 no: 4,
@@ -638,11 +701,14 @@
 
 李子勇先生說,早期的神像多半是泥塑,遇到大尊神像時,就必須調整工具,泥塑出基本型像以後,再貼上紙以及進行雕塑加工,來達到成型效果,第二代的李德惠先生採用麻布、生漆和麵粉,能夠做出等人大小的塑像,第三代的李子勇則是進一步改良,以FRP作為塑像材料,並且開模製造頭偶。
 
-對李子勇先生來說,塑像不是問題,每一個上門前來拜託的,都是希望能夠更接近自己的信仰、能夠在藝匠手中具體,接著成為幾代人的傳承與寄託。`,
-                images: ["04-1.jpg", "04-2.jpg"],
-                address: "108台北市萬華區西園路一段142號、144號",
-                hours: "周一至周六09:00-21:00,周日09:00-17:00",
-                contact: "02-2306-6970"
+對李子勇先生來說,塑像不是問題,每一個上門前來拜託的,都是希望能夠更接近自己的信仰、能夠在藝匠手中具體,接著成為幾代人的傳承與寄託。
+
+
+
+➤ 地址｜108台北市萬華區西園路一段142號、144號
+➤ 營業時間｜周一至周六09:00-21:00,周日09:00-17:00
+➤ 聯絡方式｜02-2306-6970`,
+                images: ["04-1.jpg", "04-2.jpg"]
             },
             {
                 no: 5,
@@ -653,11 +719,14 @@
 製香過程需要進口特殊的木材原料,使用浸潤過後的竹枝,沾上黏粉,再沾上檀香沈香各種調製而成的中藥原料,不斷反覆沾黏直到乾燥。製作過程極為辛苦,不能用空調或電扇降溫外,還需在製香過程研究,調整漢方中藥比例。
 
 如今到了講求環保的時代,這個代表神人媒介的傳統產業也面臨全新挑戰。店鋪生意漸淡,卻能看見真正愛香的人們上門前來購買,其中不乏國際觀光客,經由推薦或報導得知老明玉的故事,特意前來找尋可以舒緩身心,純正漢方的香。
-無論景氣好壞,老明玉依舊在艋舺深根,製香師們百年來相傳的技藝提供神人間的聯繫,寄望這些香火和祈願,能夠一支一支上達天聽,同時守護艋舺。`,
-                images: ["05-1.jpg", "05-2.jpg", "05-3.jpg"],
-                address: "108台北市萬華區貴陽街二段155號",
-                hours: "週一至週日：09:00–21:00",
-                contact: "02-2381-5569"
+無論景氣好壞,老明玉依舊在艋舺深根,製香師們百年來相傳的技藝提供神人間的聯繫,寄望這些香火和祈願,能夠一支一支上達天聽,同時守護艋舺。
+
+
+
+➤ 地址｜108台北市萬華區貴陽街二段155號
+➤ 營業時間｜週一至週日：09:00–21:00
+➤ 聯絡方式｜02-2381-5569`,
+                images: ["05-1.jpg", "05-2.jpg", "05-3.jpg"]
             },
             {
                 no: 6,
@@ -671,11 +740,18 @@
 
 1997年,紅樓被列為三級古蹟,市府以調查報告開始規劃進行整修,2000年時西門市場發生大火,違建及周遭建築物遭到嚴重損毀,紅樓的經營及存續再次受到關注,此時紅樓及西門市場逐漸開始應合。
 
-2007年,紅樓劇場轉交給台北市政府文化局下的文化基金會營運管理,文基會引入文創觀念,取名為西門紅樓,並且營運之今。現在的紅樓不只是觀光的景點,更是展現城市包容力的驕傲之地。`,
-                images: ["06-1.jpg", "06-2.jpg", "06-3.jpg"],
-                address: "108台北市萬華區成都路10號",
-                hours: "週二~週四 11:00-20:00、週五 11:00-21:00、週六 11:00-22:00、週日 11:00-21:00",
-                contact: "02-2311-9380"
+2007年,紅樓劇場轉交給台北市政府文化局下的文化基金會營運管理,文基會引入文創觀念,取名為西門紅樓,並且營運之今。現在的紅樓不只是觀光的景點,更是展現城市包容力的驕傲之地。
+
+
+
+➤ 地址｜108台北市萬華區成都路10號
+➤ 營業時間｜
+週二~週四 11:00-20:00
+週五 11:00-21:00
+週六 11:00-22:00
+週日 11:00-21:00
+➤ 聯絡方式｜02-2311-9380`,
+                images: ["06-1.jpg", "06-2.jpg", "06-3.jpg"]
             },
             {
                 no: 7,
@@ -683,11 +759,14 @@
                 location: [25.03672, 121.5013],
                 description: `川業肉圓(原新竹肉圓)第一代的陳承業原先是一名漁夫,在船難獲救後對於出海心有餘悸因此決心改行,向家鄉的福州老師傅學習做肉圓和貢丸湯,初期在新竹城隍廟擺攤叫賣,但由於新竹一帶肉圓店家競爭激烈,於是決定北上,搬到萬華龍山寺一帶以鐵馬販售肉圓及貢丸湯,那時候正好是民國初年,廟宇及戲院周遭人聲鼎沸,人潮即錢潮,新竹的肉圓店因此留了下來,也以這一年作為肉圓店開創的時間,是萬華最早賣貢丸的店。
 
-不只是最早的貢丸肉圓店,川業肉圓的歷史故事裡,有著在地人欣賞的拚搏和傳承,不只一代人對這家店有記憶,老顧客同時也見證了腳踏車攤變二輪推車,推車變成小攤,接著變成露店攤棚後搬進公有市場,最後自行租屋開張成為獨立店鋪的歷史。`,
-                images: ["07-1.jpg", "07-2.jpg", "07-3.jpg"],
-                address: "108台北市萬華區廣州街165號1樓",
-                hours: "週一至週日：10:00–21:00",
-                contact: "02-2308-1641"
+不只是最早的貢丸肉圓店,川業肉圓的歷史故事裡,有著在地人欣賞的拚搏和傳承,不只一代人對這家店有記憶,老顧客同時也見證了腳踏車攤變二輪推車,推車變成小攤,接著變成露店攤棚後搬進公有市場,最後自行租屋開張成為獨立店鋪的歷史。
+
+
+
+➤ 地址｜108台北市萬華區廣州街165號1樓
+➤ 營業時間｜週一至週日：10:00–21:00
+➤ 聯絡方式｜02-2308-1641`,
+                images: ["07-1.jpg", "07-2.jpg", "07-3.jpg"]
             },
             {
                 no: 8,
@@ -697,11 +776,14 @@
 
 第四代陳輿安接手後,建立SOP並且裝潢店面,更新菜單供國際客選擇,也同時與Uber Eats合作,開始分析每家店來客時間與比例,調整不同地區魷魚的處理方式。
 
-今天的兩喜號,依舊端出那一碗讓所有的遊客「兩喜」的魷魚羹,不只食物百年美味,四代老店更見證了艋舺人堅毅和拚搏的精神。`,
-                images: ["08-1.jpg", "08-2.jpg", "08-3.jpg"],
-                address: "108台北市萬華區西園路一段194號",
-                hours: "週一至週六：10:00–23:30",
-                contact: "02-2336-1129"
+今天的兩喜號,依舊端出那一碗讓所有的遊客「兩喜」的魷魚羹,不只食物百年美味,四代老店更見證了艋舺人堅毅和拚搏的精神。
+
+
+
+➤ 地址｜108台北市萬華區西園路一段194號
+➤ 營業時間｜週一至週六：10:00–23:30
+➤ 聯絡方式｜02-2336-1129`,
+                images: ["08-1.jpg", "08-2.jpg", "08-3.jpg"]
             },
             {
                 no: 9,
@@ -711,11 +793,14 @@
 
 往後源田先生甚至一度希望帶著這個年輕的台灣學徒一起回日本,繼續當他的好幫手,但李德眉先生沒有跟著源田先生去日本,表達想留在台灣,於是源田先生在離開台灣之際,將店鋪及所有的工具設備留給了李德眉,包括代表日本皇室的菊花摩那卡模具和貝殼模具。
 
-於是李德眉先生在長沙街掛起了「摩那卡本舖」的商號,對台灣人販售日本皇室點心,純手工製作的最中餅口味美味又新鮮,此時的摩那卡本舖甚至外銷琉球。`,
-                images: ["09-1.jpg", "09-2.jpg"],
-                address: "108台北市萬華區艋舺大道52號",
-                hours: "週一至週六：09:00–18:00(星期日公休)",
-                contact: "02-2336-2024"
+於是李德眉先生在長沙街掛起了「摩那卡本舖」的商號,對台灣人販售日本皇室點心,純手工製作的最中餅口味美味又新鮮,此時的摩那卡本舖甚至外銷琉球。
+
+
+
+➤ 地址｜108台北市萬華區艋舺大道52號
+➤ 營業時間｜週一至週六：09:00–18:00(星期日公休)
+➤ 聯絡方式｜02-2336-2024`,
+                images: ["09-1.jpg", "09-2.jpg"]
             },
             {
                 no: 10,
@@ -725,11 +810,14 @@
 
 1945年時蕭生育來台後因兩岸關係無法回去。陰錯陽差之下,蕭生育與岳父一起騎著腳踏車沿公路叫賣蒸籠,專門四處兜售各種蒸籠木桶產品,此時稱為協和蒸籠。1949年搬入中華路店面時,請了算命師取「富貴如山」四字為富山商號店名,蒸籠品質良好又提供保固,加上當時人口增加,蒸籠供不應求,全家老小動員還是來不及應付訂單,蒸籠店在民國50年代時就開始因為廣東菜風行而供不應求。
 
-後因時代變化,純手工的蒸籠價值再度被看見,許多店家發現依舊是富山這樣好品質的手作蒸籠能夠用的比較久,親自前往上門選購,第四代的接班人也開始經營網路,老店透過新時代媒體,繼續服務著上門的來客。像是那些八方雲集營業用的鍋貼蒸蓋,最後依舊選擇富山蒸籠,很多人也或許不知道自己曾經被富山服務過。`,
-                images: ["10-1.jpg", "10-2.jpg", "10-3.jpg"],
-                address: "108台北市萬華區桂林路224巷1號",
-                hours: "週一至週六：09:00–19:00(星期日公休)",
-                contact: "02-2306-0066"
+後因時代變化,純手工的蒸籠價值再度被看見,許多店家發現依舊是富山這樣好品質的手作蒸籠能夠用的比較久,親自前往上門選購,第四代的接班人也開始經營網路,老店透過新時代媒體,繼續服務著上門的來客。像是那些八方雲集營業用的鍋貼蒸蓋,最後依舊選擇富山蒸籠,很多人也或許不知道自己曾經被富山服務過。
+
+
+
+➤ 地址｜108台北市萬華區桂林路224巷1號
+➤ 營業時間｜週一至週六：09:00–19:00(星期日公休)
+➤ 聯絡方式｜02-2306-0066`,
+                images: ["10-1.jpg", "10-2.jpg", "10-3.jpg"]
             },
             {
                 no: 11,
@@ -741,11 +829,14 @@
 
 在生意穩定以後,洪大目娶郭氏為妻,正式在台灣落地生根,從扁擔到攤車都是同樣味道相傳,一直到父子在龍山寺旁搭設鐵皮屋,才有了自己的露店,並交由第二代進財接手,故此有了進財麵店之名。而龍山寺旁不遠處就是一排廣州街的跌打損傷行,當時稱為跌打損傷街,那裏有著康家的龍城號,專賣各式補湯。進財麵店後來與龍城號結為親家,因此有著這樣的店名。
 
-來到龍城號,可以看到台灣家族代代努力,一支扁擔起家,步步經營品項並發揚光大的故事。`,
-                images: ["11-1.jpg"],
-                address: "108台北市萬華區廣州街94號",
-                hours: "週二至週日：10:30–19:00、星期一公休",
-                contact: "02-2336-7668"
+來到龍城號,可以看到台灣家族代代努力,一支扁擔起家,步步經營品項並發揚光大的故事。
+
+
+
+➤ 地址｜108台北市萬華區廣州街94號
+➤ 營業時間｜週二至週日：10:30–19:00、星期一公休
+➤ 聯絡方式｜02-2336-7668`,
+                images: ["11-1.jpg"]
             },
             {
                 no: 12,
@@ -755,11 +846,14 @@
 
 根據藥籤的內容採購青草調養補身或治療各種皮膚疾病,青草由於天然無副作用,價格又負擔的起,就此變成了救命的良方,也讓龍山寺旁的這些青草攤有了「救命巷」之稱。
 
-青草店及救命巷,逐漸被現代醫學與健保普及化替代,也因為宮廟停止提供藥籤,青草店紛紛走入歷史,傳統替人治病的青草店必須另求生路,運用專業知識繼續經營下去,第三代簡宜賢開始轉型,研發養生飲品包,推出青草藥膳食坊,並與其他店鋪合作,配送提供各種客製化茶飲,也供給當地餐廳做為料理。`,
-                images: ["12-1.jpg", "12-2.jpg"],
-                address: "108台北市萬華區西昌街224巷11號",
-                hours: "週一至週六：09:00–18:00、週日10:30-18:00",
-                contact: "02-2308-5549"
+青草店及救命巷,逐漸被現代醫學與健保普及化替代,也因為宮廟停止提供藥籤,青草店紛紛走入歷史,傳統替人治病的青草店必須另求生路,運用專業知識繼續經營下去,第三代簡宜賢開始轉型,研發養生飲品包,推出青草藥膳食坊,並與其他店鋪合作,配送提供各種客製化茶飲,也供給當地餐廳做為料理。
+
+
+
+➤ 地址｜108台北市萬華區西昌街224巷11號
+➤ 營業時間｜週一至週六：09:00–18:00、週日10:30-18:00
+➤ 聯絡方式｜02-2308-5549`,
+                images: ["12-1.jpg", "12-2.jpg"]
             },
             {
                 no: 13,
@@ -769,11 +863,14 @@
 
 1998年,龍都落腳於廣州街,並改名為「龍都冰菓專業家」,這樣的店名與堅持自己熬製糖膏及各式冰品佐料的精神相符,也因為冰品美味,佐料用心,而聞名於全台,龍都的招牌為八寶冰,裡面所用到的所有花生、紅豆、花豆、脆圓、湯圓、芋圓、綠豆、芋頭全是自己家廚房熬製,被稱為「龍都冰」,成為各大行腳節目的必經景點。
 
-在2020年,龍都開業百年之際搬遷到和平西路上,第四代正在操作著刨冰機,父親開始用計時器計算出不同的材料該熬煮的時間,一家人捧著招牌的冰品,淋上祖傳熬製而成的糖漿,將美味冰品傳承下去。`,
-                images: ["13-1.jpg", "13-2.jpg", "13-3.jpg"],
-                address: "108台北市萬華區和平西路三段192號",
-                hours: "週四至週二：11:30–22:00、周一公休",
-                contact: "02-2308-2227"
+在2020年,龍都開業百年之際搬遷到和平西路上,第四代正在操作著刨冰機,父親開始用計時器計算出不同的材料該熬煮的時間,一家人捧著招牌的冰品,淋上祖傳熬製而成的糖漿,將美味冰品傳承下去。
+
+
+
+➤ 地址｜108台北市萬華區和平西路三段192號
+➤ 營業時間｜週四至週二：11:30–22:00、周一公休
+➤ 聯絡方式｜02-2308-2227`,
+                images: ["13-1.jpg", "13-2.jpg", "13-3.jpg"]
             }
         ];
         
@@ -784,6 +881,7 @@
         let speechSynthesis = window.speechSynthesis;
         let currentUtterance = null;
         let isPlaying = false;
+        let galleryInterval = null;
         
         // Initialize map
         function initMap() {
@@ -799,25 +897,42 @@
                 const marker = L.marker(point.location, {
                     icon: L.divIcon({
                         className: 'custom-marker',
-                        iconSize: [32, 32],
-                        iconAnchor: [16, 32]
+                        iconSize: [36, 36],
+                        iconAnchor: [18, 36]
                     })
                 }).addTo(map);
                 
-                marker.bindPopup(`
-                    <div class="popup-title">${point.title}</div>
-                    <a href="#" class="popup-link" onclick="showDetail(${point.no - 1}); return false;">查看詳情 →</a>
-                `);
+                // Create popup with image and button
+                const firstImage = point.images[0];
+                const popupContent = `
+                    <div class="popup-card">
+                        <img src="https://raw.githubusercontent.com/ougaga26-lab/tourmaptest/main/images/${firstImage}" 
+                             alt="${point.title}" 
+                             class="popup-image"
+                             onerror="this.style.display='none'">
+                        <div class="popup-content">
+                            <span class="popup-number">NO. ${String(point.no).padStart(2, '0')}</span>
+                            <div class="popup-title">${point.title}</div>
+                            <a href="#" class="popup-button" data-index="${point.no - 1}">查看詳情</a>
+                        </div>
+                    </div>
+                `;
                 
-                marker.on('click', () => {
+                marker.bindPopup(popupContent, {
+                    maxWidth: 320,
+                    minWidth: 280,
+                    closeButton: true
+                });
+                
+                marker.on('popupopen', () => {
                     setTimeout(() => {
-                        const popupLinks = document.querySelectorAll('.popup-link');
-                        popupLinks.forEach(link => {
-                            link.addEventListener('click', (e) => {
+                        const button = document.querySelector(`[data-index="${point.no - 1}"]`);
+                        if (button) {
+                            button.addEventListener('click', (e) => {
                                 e.preventDefault();
                                 showDetail(point.no - 1);
                             });
-                        });
+                        }
                     }, 100);
                 });
             });
@@ -847,7 +962,7 @@
             currentPoint.images.forEach((img, i) => {
                 const slide = document.createElement('div');
                 slide.className = 'gallery-slide';
-                slide.innerHTML = `<img src="https://raw.githubusercontent.com/ougaga26-lab/tourmaptest/main/images/${img}" alt="${currentPoint.title} ${i + 1}" onerror="this.src='https://via.placeholder.com/800x400/1a1816/d4af37?text=${encodeURIComponent(currentPoint.title)}'">`;
+                slide.innerHTML = `<img src="https://raw.githubusercontent.com/ougaga26-lab/tourmaptest/main/images/${img}" alt="${currentPoint.title} ${i + 1}" onerror="this.src='https://via.placeholder.com/800x400/1a1816/c9a961?text=${encodeURIComponent(currentPoint.title)}'">`;
                 galleryTrack.appendChild(slide);
                 
                 const dot = document.createElement('div');
@@ -856,26 +971,12 @@
                 galleryControls.appendChild(dot);
             });
             
-            // Build info section
-            const infoSection = document.getElementById('info-section');
-            infoSection.innerHTML = `
-                <div class="info-item">
-                    <div class="info-label">➤ 地址</div>
-                    <div class="info-value">${currentPoint.address}</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">➤ 營業時間</div>
-                    <div class="info-value">${currentPoint.hours}</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">➤ 聯絡方式</div>
-                    <div class="info-value">${currentPoint.contact}</div>
-                </div>
-            `;
-            
             // Show detail view
             document.getElementById('detail-view').classList.add('active');
             document.body.style.overflow = 'hidden';
+            
+            // Start auto-play gallery (5 seconds)
+            startGalleryAutoPlay();
         }
         
         // Close detail page
@@ -884,6 +985,9 @@
             if (isPlaying) {
                 toggleAudio();
             }
+            
+            // Stop gallery auto-play
+            stopGalleryAutoPlay();
             
             document.getElementById('detail-view').classList.remove('active');
             document.body.style.overflow = 'auto';
@@ -905,11 +1009,33 @@
         function prevImage() {
             const newIndex = currentImageIndex > 0 ? currentImageIndex - 1 : currentPoint.images.length - 1;
             goToImage(newIndex);
+            resetGalleryAutoPlay();
         }
         
         function nextImage() {
             const newIndex = currentImageIndex < currentPoint.images.length - 1 ? currentImageIndex + 1 : 0;
             goToImage(newIndex);
+        }
+        
+        // Gallery auto-play functions
+        function startGalleryAutoPlay() {
+            stopGalleryAutoPlay();
+            if (currentPoint && currentPoint.images.length > 1) {
+                galleryInterval = setInterval(() => {
+                    nextImage();
+                }, 5000); // 5 seconds
+            }
+        }
+        
+        function stopGalleryAutoPlay() {
+            if (galleryInterval) {
+                clearInterval(galleryInterval);
+                galleryInterval = null;
+            }
+        }
+        
+        function resetGalleryAutoPlay() {
+            startGalleryAutoPlay();
         }
         
         // Audio playback
@@ -921,7 +1047,7 @@
                 speechSynthesis.cancel();
                 isPlaying = false;
                 button.classList.remove('playing');
-                text.textContent = '播放語音導覽';
+                text.textContent = '朗讀介紹';
             } else {
                 const utterance = new SpeechSynthesisUtterance(currentPoint.description);
                 utterance.lang = 'zh-TW';
@@ -931,7 +1057,7 @@
                 utterance.onend = () => {
                     isPlaying = false;
                     button.classList.remove('playing');
-                    text.textContent = '播放語音導覽';
+                    text.textContent = '朗讀介紹';
                 };
                 
                 speechSynthesis.speak(utterance);
@@ -942,20 +1068,9 @@
             }
         }
         
-        // Auto-advance gallery
-        let galleryInterval;
-        function startGalleryAutoPlay() {
-            galleryInterval = setInterval(() => {
-                if (currentPoint && currentPoint.images.length > 1) {
-                    nextImage();
-                }
-            }, 5000);
-        }
-        
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
             initMap();
-            startGalleryAutoPlay();
         });
         
         // Stop audio when leaving page
@@ -963,6 +1078,7 @@
             if (isPlaying) {
                 speechSynthesis.cancel();
             }
+            stopGalleryAutoPlay();
         });
     </script>
 </body>
