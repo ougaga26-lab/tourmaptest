@@ -641,6 +641,10 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     
     <script>
+        // VoAI API Configuration
+        const VOAI_API_KEY = 'iq-25o+cxUIWDWQnIcalaDfHZBhHKuxp2mj8zHAAqVSUsk=';
+        const VOAI_API_URL = 'https://connect.voai.ai/TTS/Speech';
+        
         // Points data from CSV
         const points = [
             {
@@ -880,8 +884,7 @@
         let map;
         let currentPoint = null;
         let currentImageIndex = 0;
-        let speechSynthesis = window.speechSynthesis;
-        let currentUtterance = null;
+        let currentAudio = null;
         let isPlaying = false;
         let galleryInterval = null;
         
@@ -1046,33 +1049,86 @@
             startGalleryAutoPlay();
         }
         
-        // Audio playback
-        function toggleAudio() {
+        // Audio playback with VoAI API
+        async function toggleAudio() {
             const button = document.getElementById('audio-button');
             const text = document.getElementById('audio-text');
             
             if (isPlaying) {
-                speechSynthesis.cancel();
+                // Stop playing
+                if (currentAudio) {
+                    currentAudio.pause();
+                    currentAudio = null;
+                }
                 isPlaying = false;
                 button.classList.remove('playing');
                 text.textContent = '朗讀介紹';
             } else {
-                const utterance = new SpeechSynthesisUtterance(currentPoint.description);
-                utterance.lang = 'zh-TW';
-                utterance.rate = 0.9;
-                utterance.pitch = 1;
-                
-                utterance.onend = () => {
-                    isPlaying = false;
-                    button.classList.remove('playing');
+                // Start playing
+                try {
+                    button.disabled = true;
+                    text.textContent = '載入中...';
+                    
+                    // Call VoAI API
+                    const response = await fetch(VOAI_API_URL, {
+                        method: 'POST',
+                        headers: {
+                            'x-output-format': 'mp3',
+                            'x-api-key': VOAI_API_KEY,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            version: 'Sota',
+                            text: currentPoint.description,
+                            speaker: '文彬',
+                            style: '預設',
+                            speed: 1,
+                            pitch_shift: 0,
+                            style_weight: 0,
+                            breath_pause: 0.3
+                        })
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error('API request failed');
+                    }
+                    
+                    // Get audio blob
+                    const audioBlob = await response.blob();
+                    const audioUrl = URL.createObjectURL(audioBlob);
+                    
+                    // Create and play audio
+                    currentAudio = new Audio(audioUrl);
+                    
+                    currentAudio.onended = () => {
+                        isPlaying = false;
+                        button.classList.remove('playing');
+                        button.disabled = false;
+                        text.textContent = '朗讀介紹';
+                        URL.revokeObjectURL(audioUrl);
+                    };
+                    
+                    currentAudio.onerror = () => {
+                        isPlaying = false;
+                        button.classList.remove('playing');
+                        button.disabled = false;
+                        text.textContent = '朗讀介紹';
+                        alert('播放失敗，請稍後再試');
+                        URL.revokeObjectURL(audioUrl);
+                    };
+                    
+                    await currentAudio.play();
+                    isPlaying = true;
+                    button.classList.add('playing');
+                    button.disabled = false;
+                    text.textContent = '停止播放';
+                    
+                } catch (error) {
+                    console.error('VoAI API Error:', error);
+                    button.disabled = false;
                     text.textContent = '朗讀介紹';
-                };
-                
-                speechSynthesis.speak(utterance);
-                currentUtterance = utterance;
-                isPlaying = true;
-                button.classList.add('playing');
-                text.textContent = '停止播放';
+                    alert('語音生成失敗，請檢查 API Key 或網路連線');
+                }
             }
         }
         
@@ -1083,8 +1139,9 @@
         
         // Stop audio when leaving page
         window.addEventListener('beforeunload', () => {
-            if (isPlaying) {
-                speechSynthesis.cancel();
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio = null;
             }
             stopGalleryAutoPlay();
         });
